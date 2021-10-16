@@ -3,6 +3,7 @@
 import useResizeObserver from "@react-hook/resize-observer";
 import { useEffect, useLayoutEffect, useRef, useState, useMemo } from "react";
 import { createContext, useContext } from "react";
+import { getAllJSDocTagsOfKind } from "typescript";
 import yoga, { Node, YogaConfig } from "yoga-layout-prebuilt";
 
 /** @type {YogaConfig} */
@@ -50,7 +51,7 @@ export const Box = ({
   children,
   width = null,
   height = null,
-  flex = 2,
+  flex = 1,
   flexDirection = yoga.FLEX_DIRECTION_ROW,
   margin = 0,
   marginTop = 0,
@@ -86,8 +87,9 @@ export const Box = ({
     console.log("Calc size", displayName, size, observedSize);
     if (node === null) {
       console.log("Creating root " + displayName);
-
-      const n = Node.create();
+      const cfg = yoga.Config.create();
+      cfg.setPointScaleFactor(0);
+      const n = Node.createWithConfig(cfg);
       n.displayName = displayName;
       n.setDisplay(yoga.DISPLAY_FLEX);
       setNode(n);
@@ -101,8 +103,10 @@ export const Box = ({
   useLayoutEffect(() => {
     if (parent !== null) {
       console.log("Creating node " + displayName);
+      const cfg = yoga.Config.create();
+      cfg.setPointScaleFactor(0);
       /** @type {yoga.YogaNode} */
-      const n = Node.create();
+      const n = Node.createWithConfig(cfg);
       n.setDisplay(yoga.DISPLAY_FLEX);
       n.displayName = displayName;
       const index = parent.getChildCount();
@@ -122,7 +126,11 @@ export const Box = ({
 
     return () => {
       if (parent !== null) {
-        parent.removeChild(node);
+        try {
+          parent.removeChild(node);
+        } catch (e) {
+        } finally {
+        }
         changed();
       }
     };
@@ -199,35 +207,39 @@ export const Box = ({
     }
     // }
   }, [childRenders]);
-  const layout = node?.getComputedLayout();
+  console.log(node?.getComputedLayout());
+  const computedLayout = node?.getComputedLayout() || {};
+  let layout = computedLayout;
   console.log(displayName, layout, node?.displayName);
-  const contextValue = {
-    parent: node,
-    root: rootNode,
-    changed: () => {
-      console.log("changed!");
-      setChildRenders(Math.random());
-    },
-  };
-  //   ),
-  //   [node, rootNode, setChildRenders]
-  // );
+  const contextValue = useMemo(
+    () => ({
+      parent: node,
+      root: rootNode,
+      changed: () => {
+        console.log("changed!");
+        setChildRenders(Math.random());
+      },
+    }),
+    [
+      node,
+      rootNode,
+      setChildRenders,
+      layout.width,
+      layout.height,
+      layout.top,
+      layout.left,
+      layout.bottom,
+      layout.right,
+    ]
+  );
   return (
-    <BoxContext.Provider
-      value={{
-        parent: node,
-        root: rootNode,
-        changed: () => {
-          console.log("changed!");
-          setChildRenders(Math.random());
-        },
-      }}
-    >
+    <BoxContext.Provider value={contextValue}>
       <div
         style={{
           boxSizing: "border-box",
           position: root === NO_CONTEXT ? "relative" : "absolute",
           ...layout,
+          // transform: `translate(${left}px, ${top}px)`,
           ...style,
         }}
         ref={target}
