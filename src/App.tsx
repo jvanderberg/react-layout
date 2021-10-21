@@ -1,30 +1,35 @@
 import { Fragment } from "react";
 import "./App.css";
+import { AutoSize } from "./AutoSize";
 import { HBox, VBox } from "./Layout";
 const boxShadow = { boxShadow: "0px 0px 0.5px 0.5px blue" };
+interface ContentsType {
+  children?: any;
+  color: string;
+}
 
-const Contents = ({ children, color }) => {
+const Contents = ({ children, color }: ContentsType) => {
   const boxShadow = { boxShadow: "0px 0px 0.5px 0.5px " + color };
 
   return (
     <Fragment>
-      <HBox>
-        <VBox flex={1} style={boxShadow} displayName="Child1">
-          <VBox style={boxShadow} displayName="Child1"></VBox>
-          <VBox style={boxShadow} displayName="Child1"></VBox>
-          <VBox style={boxShadow} displayName="Child1"></VBox>
+      <HBox displayName="ContentsRoot">
+        <VBox width={"20%"} style={boxShadow} displayName="Child1">
+          <VBox style={boxShadow} displayName="Child1-1"></VBox>
+          <VBox style={boxShadow} displayName="Child1-2"></VBox>
+          <VBox style={boxShadow} displayName="Child1-3"></VBox>
         </VBox>
-        <VBox flex={3} style={boxShadow} displayName="Child1">
-          <VBox flex={1} style={boxShadow} displayName="Child1"></VBox>
-          <VBox flex={3} style={boxShadow} displayName="Child1">
+        <VBox width={"60%"} style={boxShadow} displayName="Child2">
+          <VBox flex={1} style={boxShadow} displayName="Child2-1"></VBox>
+          <VBox flex={3} style={boxShadow} displayName="Child2-2">
             {children}
           </VBox>
           <VBox flex={1} style={boxShadow} displayName="Child1"></VBox>
         </VBox>
-        <VBox flex={1} style={boxShadow} displayName="Child1">
-          <VBox style={boxShadow} displayName="Child1"></VBox>
-          <VBox style={boxShadow} displayName="Child1"></VBox>
-          <VBox style={boxShadow} displayName="Child1"></VBox>
+        <VBox width={"20%"} style={boxShadow} displayName="Child3">
+          <VBox style={boxShadow} displayName="Child3-1"></VBox>
+          <VBox style={boxShadow} displayName="Child3-2"></VBox>
+          <VBox style={boxShadow} displayName="Child3-3"></VBox>
         </VBox>
       </HBox>
     </Fragment>
@@ -33,30 +38,21 @@ const Contents = ({ children, color }) => {
 function App() {
   return (
     <div className="App">
-      <HBox
-        displayName="Root"
-        style={{
-          width: "100vw",
-          height: "100vh",
-          outline: "0.5px solid red",
-        }}
-      >
-        <Contents color="red">
+      <AutoSize viewPort={true}>
+        <HBox displayName="Root">
           <Contents color="blue">
-            <Contents color="green">
-              <Contents color="orange">
-                <Contents color="black">
-                  <Contents color="gray">
-                    <Contents color="magenta">
-                      <Contents color="cyan"></Contents>
-                    </Contents>
+            <Contents color="black">
+              <Contents color="green">
+                <Contents color="orange">
+                  <Contents color="black">
+                    <Contents color="gray"></Contents>
                   </Contents>
                 </Contents>
               </Contents>
             </Contents>
           </Contents>
-        </Contents>
-      </HBox>
+        </HBox>
+      </AutoSize>
       {/* <Box
         displayName="Root"
         flexDirection={2}

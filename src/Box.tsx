@@ -7,20 +7,25 @@ import React, {
   useRef,
   useState,
   useMemo,
-  ReactChildren,
   ReactNode,
 } from "react";
 import { createContext, useContext } from "react";
 import yoga, { Node } from "yoga-layout-prebuilt";
+import {
+  AutoSizeContext,
+  AutoSizeContextType,
+  DefaultAutoSizeContext,
+} from "./AutoSize";
+import { YogaNode } from "./Old";
 
 const NO_CONTEXT: Symbol = Symbol("NO_CONTEXT");
 
-interface BoxContext {
-  root: yoga.YogaNode | Symbol;
+interface BoxContextType {
+  root: yoga.YogaNode | Symbol | null;
   parent: yoga.YogaNode | null;
   changed: () => void;
 }
-const defaultContext: BoxContext = {
+const defaultContext: BoxContextType = {
   root: NO_CONTEXT,
   parent: null,
   changed: () => {},
@@ -35,31 +40,16 @@ const debounce = (func: Function, timeout: number = 300) => {
     }, timeout);
   };
 };
-export const BoxContext = createContext(defaultContext);
-
-const useSize = (
-  target: React.RefObject<HTMLDivElement>
-): DOMRect | undefined => {
-  const [size, setSize] = useState<DOMRect | undefined>({
-    width: 0,
-    height: 0,
-    x: 0,
-    y: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    top: 0,
-    toJSON: () => {},
-  });
-  const handler = () => {
-    // console.log("SET SIZE", target?.current?.getBoundingClientRect());
-    setSize(target?.current?.getBoundingClientRect());
-  };
-
-  useResizeObserver(target, handler);
-  return size;
-};
-
+export const BoxContext = createContext<BoxContextType>(defaultContext);
+interface Size {
+  width: number | undefined;
+  height: number | undefined;
+}
+interface BoxState {
+  node: YogaNode | null;
+  parent: YogaNode | null;
+  childRenders: number;
+}
 interface BoxProps {
   displayName?: string;
   children?: ReactNode;
@@ -98,174 +88,112 @@ export const Box = ({
   alignItems = yoga.ALIGN_FLEX_START,
   style,
 }: BoxProps): JSX.Element => {
-  const { root, parent, changed } = useContext<BoxContext>(BoxContext);
+  const { root, parent, changed } = useContext<BoxContextType>(BoxContext);
+  let requestLayout = changed;
+  console.log(
+    "Context",
+    displayName,
+    width,
+    height,
+    flex,
+    parent?.getComputedLayout()
+  );
 
-  const [node, setNode] = useState<yoga.YogaNode | null>(null);
-  const [observedSize, setObservedSize] = useState<DOMRect | undefined>({
-    width: 0,
-    height: 0,
-    x: 0,
-    y: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    top: 0,
-    toJSON: () => {},
-  });
+  const state = useRef<BoxState>({ node: null, parent: null, childRenders: 0 });
 
-  let size = observedSize;
-  // console.log(
-  //   //@ts-ignore
-  //   "Render " + displayName + " parent: " + parent?.displayName,
-  //   size
-  // );
-  const [childRenders, setChildRenders] = useState<number>(0);
-  const target = useRef<HTMLDivElement>(null);
+  let size: Size = { width: 0, height: 0 };
+
+  const [layoutRequests, setLayoutRequests] = useState<number>(0);
   let rootNode = root;
   if (root === NO_CONTEXT) {
     //We are root
     //eslint-disable-next-line
-    size = useSize(target);
-    //eslint-disable-next-line
-    useLayoutEffect(() => setObservedSize(size));
-    // console.log("Calc size", displayName, size, observedSize);
-    if (node === null) {
-      // console.log("Creating root " + displayName);
+    const contextSize = useContext(AutoSizeContext);
+    //If we have no wrapping context, the size must be undefined.
+    size.width =
+      typeof contextSize.width === "symbol" ? undefined : contextSize.width;
+    size.height =
+      typeof contextSize.height === "symbol" ? undefined : contextSize.height;
+
+    if (state.current.node === null) {
       const cfg = yoga.Config.create();
       cfg.setPointScaleFactor(0);
       const n = Node.createWithConfig(cfg);
       //@ts-ignore
       n.displayName = displayName;
-      n.setDisplay(yoga.DISPLAY_FLEX);
-      setNode(n);
+      state.current.node = n;
       rootNode = n;
     } else {
-      rootNode = node;
+      rootNode = state.current.node;
     }
+    requestLayout = () => {
+      setLayoutRequests((val) => val + 1);
+    };
   }
 
-  useLayoutEffect(() => {
-    if (parent !== null) {
-      // console.log("Creating node " + displayName);
-      const cfg = yoga.Config.create();
-      cfg.setPointScaleFactor(0);
-      /** @type {yoga.YogaNode} */
-      const n = Node.createWithConfig(cfg);
+  if (parent !== null && parent !== state.current.parent) {
+    console.log("Creating node " + displayName);
+    const cfg = yoga.Config.create();
+    cfg.setPointScaleFactor(0);
+    /** @type {yoga.YogaNode} */
+    const n = Node.createWithConfig(cfg);
 
-      n.setDisplay(yoga.DISPLAY_FLEX);
-      //@ts-ignore
-      n.displayName = displayName;
-      const index = parent.getChildCount();
-      // console.log(
-      //   "Adding child " +
-      //     displayName +
-      //     " to " +
-      //     //@ts-ignore
+    n.setDisplay(yoga.DISPLAY_FLEX);
+    //@ts-ignore
+    n.displayName = displayName;
+    const index = parent.getChildCount();
+    console.log(
+      "****** Adding child " +
+        displayName +
+        " to " +
+        //@ts-ignore
 
-      //     parent.displayName +
-      //     " at " +
-      //     index
-      // );
-      parent.insertChild(n, index);
+        parent.displayName +
+        " at " +
+        index
+    );
 
-      setNode(n);
-      changed();
-    }
+    parent.insertChild(n, index);
 
-    return () => {
-      if (parent !== null) {
-        // try {
-        if (node) {
-          parent.removeChild(node);
-        }
-        // } catch (e) {
-        // } finally {
-        // }
-        //
-        //changed();
-      }
-    };
-  }, [parent]);
-
-  useLayoutEffect(() => {
-    if (node) {
-      const w: number | string | undefined = width || size?.width;
-      const h: number | string | undefined = height || size?.height;
-      // console.log("Set size", displayName, w, h, size);
-
-      node.setWidth(w || "100%");
-      node.setHeight(h || "100%");
-      if (flex) {
-        node.setFlex(flex);
-      }
-      node.setFlexDirection(flexDirection);
-      node.setMargin(yoga.EDGE_ALL, margin);
-      node.setMargin(yoga.EDGE_BOTTOM, marginBottom);
-      node.setMargin(yoga.EDGE_TOP, marginTop);
-      node.setMargin(yoga.EDGE_LEFT, marginLeft);
-      node.setMargin(yoga.EDGE_RIGHT, marginRight);
-      node.setMinHeight(minHeight);
-      node.setMinWidth(minWidth);
-      node.setBorder(yoga.EDGE_ALL, border);
-      node.setJustifyContent(justifyContent);
-      node.setAlignItems(alignItems);
-      // console.log(node.getWidth());
-      // console.log(
-      //   displayName,
-      //   "Calc computed layout after sizing",
-      //   w,
-      //   h,
-      //   node.getChildCount()
-      // );
-      if (root === NO_CONTEXT) {
-        node.calculateLayout(
-          typeof w === "string" ? undefined : w,
-          typeof h === "string" ? undefined : h,
-          yoga.DIRECTION_LTR
-        );
-      }
-
-      changed();
-    }
-  }, [
-    node,
-    width,
-    size?.width,
-    size?.height,
-    flex,
-    flexDirection,
-    margin,
-    marginBottom,
-    marginLeft,
-    marginRight,
-    marginTop,
-    minWidth,
-    minHeight,
-    height,
-    justifyContent,
-    alignItems,
-  ]);
+    state.current.node = n;
+  }
 
   useEffect(() => {
-    if (node) {
-      // console.log(
-      //   displayName,
-      //   "Calc computed layout in child render trigger",
-      //   node.getWidth().value || size?.width,
-      //   node.getHeight().value || size?.height,
-      //   node.getChildCount()
-      // );
-      // if (root === NO_CONTEXT) {
-      node.calculateLayout(
-        node.getWidth().value || size?.width,
-        node.getHeight().value || size?.height,
-        yoga.DIRECTION_LTR
-      );
+    changed();
+  }, [state.current.node]);
+
+  if (state.current.node) {
+    const node = state.current.node;
+    const w: number | string | undefined = width || size?.width;
+    const h: number | string | undefined = height || size?.height;
+    console.log("Set size", displayName, width, height, w, h, size);
+
+    if (w) node.setWidth(w);
+    if (h) node.setHeight(h);
+    if (flex) {
+      node.setFlex(flex);
     }
-    // }
-  }, [childRenders]);
-  // console.log(node?.getComputedLayout());
-  const computedLayout = node?.getComputedLayout() || {
+    node.setFlexDirection(flexDirection);
+    node.setMargin(yoga.EDGE_ALL, margin);
+    node.setMargin(yoga.EDGE_BOTTOM, marginBottom);
+    node.setMargin(yoga.EDGE_TOP, marginTop);
+    node.setMargin(yoga.EDGE_LEFT, marginLeft);
+    node.setMargin(yoga.EDGE_RIGHT, marginRight);
+    node.setMinHeight(minHeight);
+    node.setMinWidth(minWidth);
+    node.setBorder(yoga.EDGE_ALL, border);
+    node.setJustifyContent(justifyContent);
+    node.setAlignItems(alignItems);
+  }
+
+  const computedLayout = state.current.node?.getComputedLayout();
+  console.log(
+    displayName,
+    "computedLayout",
+    state.current.node?.getComputedLayout()
+  );
+
+  let layout = computedLayout || {
     width: 0,
     height: 0,
     left: 0,
@@ -273,43 +201,50 @@ export const Box = ({
     bottom: 0,
     right: 0,
   };
-  let layout = computedLayout;
-  //@ts-ignore
-  // console.log(displayName, layout, node?.displayName);
-  const contextValue = useMemo(
-    () => ({
-      parent: node,
-      root: rootNode,
-      changed: () => {
-        // console.log("changed!");
-        setChildRenders(Math.random());
-      },
-    }),
-    [
-      node,
-      rootNode,
-      setChildRenders,
-      layout.width,
-      layout.height,
-      layout.top,
-      layout.left,
-      layout.bottom,
-      layout.right,
-    ]
-  );
+  for (let key of Object.keys(layout)) {
+    //@ts-ignore
+    if (Number.isNaN(layout[key])) {
+      //@ts-ignore
+      layout[key] = 0;
+    }
+  }
+
+  if (root === NO_CONTEXT) {
+    const w: number | string | undefined = width || size?.width;
+    const h: number | string | undefined = height || size?.height;
+
+    state.current.node?.calculateLayout(
+      typeof w === "number" && w > 0 ? w : undefined,
+      typeof h === "number" && h > 0 ? h : undefined,
+      yoga.DIRECTION_LTR
+    );
+    if (state.current.node) {
+      layout = state.current.node?.getComputedLayout();
+    }
+  }
+
+  state.current.parent = parent;
   return (
-    <BoxContext.Provider value={contextValue}>
-      <div
-        style={{
-          boxSizing: "border-box",
-          position: root === NO_CONTEXT ? "relative" : "absolute",
-          ...layout,
-          ...style,
+    //We always create a new empty auto size context, to kill the scope if there is a wrapping context
+    <AutoSizeContext.Provider value={DefaultAutoSizeContext}>
+      <BoxContext.Provider
+        value={{
+          parent: state.current.node,
+          root: rootNode,
+          changed: requestLayout,
         }}
-        ref={target}
       >
-        {children}
-      </div>
-    </BoxContext.Provider>
+        <div
+          style={{
+            boxSizing: "border-box",
+            position: root === NO_CONTEXT ? "relative" : "absolute",
+            ...layout,
+            ...style,
+          }}
+        >
+          {children}
+        </div>
+      </BoxContext.Provider>
+    </AutoSizeContext.Provider>
   );
 };
