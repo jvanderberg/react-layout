@@ -100,7 +100,6 @@ export const Box = ({
   );
 
   const state = useRef<BoxState>({ node: null, parent: null, childRenders: 0 });
-
   let size: Size = { width: 0, height: 0 };
 
   const [layoutRequests, setLayoutRequests] = useState<number>(0);
@@ -124,55 +123,61 @@ export const Box = ({
       state.current.node = n;
       rootNode = n;
     } else {
+      //We are root
       rootNode = state.current.node;
     }
+    //Override the requestLayout, all must call the root
     requestLayout = () => {
       setLayoutRequests((val) => val + 1);
     };
   }
 
-  if (parent !== null && parent !== state.current.parent) {
-    console.log("Creating node " + displayName);
-    const cfg = yoga.Config.create();
-    cfg.setPointScaleFactor(0);
-    /** @type {yoga.YogaNode} */
-    const n = Node.createWithConfig(cfg);
-
-    n.setDisplay(yoga.DISPLAY_FLEX);
-    //@ts-ignore
-    n.displayName = displayName;
-    const index = parent.getChildCount();
-    console.log(
-      "****** Adding child " +
-        displayName +
-        " to " +
-        //@ts-ignore
-
-        parent.displayName +
-        " at " +
-        index
-    );
-
-    parent.insertChild(n, index);
-
-    state.current.node = n;
-  }
-
   useEffect(() => {
-    changed();
-  }, [state.current.node]);
+    //If parent set and parent has changed
+    if (parent !== null && state.current.node === null) {
+      console.log("Creating node " + displayName);
+      const cfg = yoga.Config.create();
+      cfg.setPointScaleFactor(0);
+      const n: YogaNode = Node.createWithConfig(cfg);
 
+      n.setDisplay(yoga.DISPLAY_FLEX);
+      //@ts-ignore
+      n.displayName = displayName;
+      const index = parent.getChildCount();
+      console.log(
+        "****** Adding child " +
+          displayName +
+          " to " +
+          //@ts-ignore
+
+          parent.displayName +
+          " at " +
+          index
+      );
+
+      parent.insertChild(n, index);
+
+      state.current.node = n;
+      changed();
+    }
+  }, [parent]);
+
+  //Set our layout from props
   if (state.current.node) {
     const node = state.current.node;
-    const w: number | string | undefined = width || size?.width;
-    const h: number | string | undefined = height || size?.height;
+    // Size will be undefined if not root
+    let w = width;
+    let h = height;
+    if (root === NO_CONTEXT) {
+      w = width ?? size?.width;
+      h = height ?? size?.height;
+    }
     console.log("Set size", displayName, width, height, w, h, size);
 
-    if (w) node.setWidth(w);
-    if (h) node.setHeight(h);
-    if (flex) {
-      node.setFlex(flex);
-    }
+    if (w !== null && typeof w !== "undefined") node.setWidth(w);
+    if (h !== null && typeof h !== "undefined") node.setHeight(h);
+    if (flex) node.setFlex(flex);
+
     node.setFlexDirection(flexDirection);
     node.setMargin(yoga.EDGE_ALL, margin);
     node.setMargin(yoga.EDGE_BOTTOM, marginBottom);
@@ -180,12 +185,12 @@ export const Box = ({
     node.setMargin(yoga.EDGE_LEFT, marginLeft);
     node.setMargin(yoga.EDGE_RIGHT, marginRight);
     node.setMinHeight(minHeight);
+
     node.setMinWidth(minWidth);
     node.setBorder(yoga.EDGE_ALL, border);
     node.setJustifyContent(justifyContent);
     node.setAlignItems(alignItems);
   }
-
   const computedLayout = state.current.node?.getComputedLayout();
   console.log(
     displayName,
@@ -209,13 +214,30 @@ export const Box = ({
     }
   }
 
+  useEffect(() => {
+    changed();
+  }, [
+    layout.width,
+    layout.height,
+    layout.bottom,
+    layout,
+    top,
+    layout.left,
+    layout.right,
+  ]);
+
   if (root === NO_CONTEXT) {
-    const w: number | string | undefined = width || size?.width;
-    const h: number | string | undefined = height || size?.height;
+    const w: number | string | undefined = width ?? size?.width;
+    const h: number | string | undefined = height ?? size?.height;
+    console.log(
+      displayName,
+      "computedLayout",
+      state.current.node?.getComputedLayout()
+    );
 
     state.current.node?.calculateLayout(
-      typeof w === "number" && w > 0 ? w : undefined,
-      typeof h === "number" && h > 0 ? h : undefined,
+      typeof w === "number" ? w : undefined,
+      typeof h === "number" ? h : undefined,
       yoga.DIRECTION_LTR
     );
     if (state.current.node) {

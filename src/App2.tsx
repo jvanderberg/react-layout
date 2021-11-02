@@ -1,34 +1,32 @@
 import { Fragment, useState } from "react";
 import "./App.css";
 import { AutoSize } from "./AutoSize";
-import { HBox, VBox } from "./Layout";
+import { HBox, Spacer, VBox } from "./Layout";
 import { easeInQuad, linear, usePropertyAnimator } from "./usePropertyAnimator";
 const boxShadow = { boxShadow: "0px 0px 0.5px 0.5px blue" };
 
 function App2() {
   //let [width, setWidth] = useState(500);
   const [opened, setOpened] = useState<boolean>(true);
-  const wclose = usePropertyAnimator(200, 1, 500, easeInQuad, [opened]);
-  const wopen = usePropertyAnimator(1, 200, 500, easeInQuad, [opened]);
+  const wclose = usePropertyAnimator(200, 0.0, 500, linear, [opened]);
+  const wopen = usePropertyAnimator(0.00001, 200, 500, linear, [opened]);
+  // const wclose = 0.0;
+  //const wopen = 200;
   return (
     <div className="App">
       <HBox height={700} width={1000} displayName="Root" style={boxShadow}>
+        {/* <Spacer size={20} /> */}
         <HBox
           style={boxShadow}
           displayName="LeftPanel"
           width={opened ? wopen : wclose}
+          //width={0}
         ></HBox>
         <VBox
           flex={1}
           style={{ backgroundColor: "#FF0000" }}
           displayName="Contents"
-        >
-          <VBox
-            flex={1}
-            displayName={"breaker"}
-            style={{ backgroundColor: "#00FF00" }}
-          ></VBox>
-        </VBox>
+        ></VBox>
       </HBox>
       <button value="Toggle" onClick={() => setOpened(!opened)}>
         Toggle
