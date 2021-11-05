@@ -47,8 +47,6 @@ interface Size {
 }
 interface BoxState {
   node: YogaNode | null;
-  parent: YogaNode | null;
-  childRenders: number;
 }
 interface BoxProps {
   displayName?: string;
@@ -89,31 +87,26 @@ export const Box = ({
   style,
 }: BoxProps): JSX.Element => {
   const { root, parent, changed } = useContext<BoxContextType>(BoxContext);
+
   let requestLayout = changed;
-  console.log(
-    "Context",
-    displayName,
-    width,
-    height,
-    flex,
-    parent?.getComputedLayout()
-  );
-
-  const state = useRef<BoxState>({ node: null, parent: null, childRenders: 0 });
-  let size: Size = { width: 0, height: 0 };
-
   const [layoutRequests, setLayoutRequests] = useState<number>(0);
-  let rootNode = root;
-  if (root === NO_CONTEXT) {
-    //We are root
-    //eslint-disable-next-line
-    const contextSize = useContext(AutoSizeContext);
-    //If we have no wrapping context, the size must be undefined.
-    size.width =
-      typeof contextSize.width === "symbol" ? undefined : contextSize.width;
-    size.height =
-      typeof contextSize.height === "symbol" ? undefined : contextSize.height;
 
+  const state = useRef<BoxState>({ node: null });
+
+  let measuredSize: Size = { width: 0, height: 0 };
+
+  const isRoot = root === NO_CONTEXT;
+
+  let rootNode = root;
+
+  const contextSize = useContext(AutoSizeContext);
+  //If we have no wrapping context, the size must be undefined.
+  measuredSize.width =
+    typeof contextSize.width === "symbol" ? undefined : contextSize.width;
+  measuredSize.height =
+    typeof contextSize.height === "symbol" ? undefined : contextSize.height;
+
+  if (isRoot) {
     if (state.current.node === null) {
       const cfg = yoga.Config.create();
       cfg.setPointScaleFactor(0);
@@ -126,45 +119,12 @@ export const Box = ({
       //We are root
       rootNode = state.current.node;
     }
+
     //Override the requestLayout, all must call the root
     requestLayout = () => {
       setLayoutRequests((val) => val + 1);
     };
   }
-
-  if (parent !== null && parent !== state.current.parent) {
-    //If parent set and parent has changed
-    // if (parent !== null && state.current.node === null) {
-    console.log("Creating node " + displayName);
-    const cfg = yoga.Config.create();
-    cfg.setPointScaleFactor(0);
-    const n: YogaNode = Node.createWithConfig(cfg);
-
-    n.setDisplay(yoga.DISPLAY_FLEX);
-    //@ts-ignore
-    n.displayName = displayName;
-    const index = parent.getChildCount();
-    console.log(
-      "****** Adding child " +
-        displayName +
-        " to " +
-        //@ts-ignore
-
-        parent.displayName +
-        " at " +
-        index
-    );
-
-    parent.insertChild(n, index);
-
-    state.current.node = n;
-    //changed();
-  }
-  //, [parent]);
-
-  useEffect(() => {
-    changed();
-  }, [state.current.node]);
 
   //Set our layout from props
   if (state.current.node) {
@@ -172,11 +132,12 @@ export const Box = ({
     // Size will be undefined if not root
     let w = width;
     let h = height;
-    if (root === NO_CONTEXT) {
-      w = width ?? size?.width;
-      h = height ?? size?.height;
+    if (isRoot) {
+      w = width ?? measuredSize?.width;
+      h = height ?? measuredSize?.height;
     }
-    console.log("Set size", displayName, width, height, w, h, size);
+
+    console.log("Set size", displayName, width, height, w, h, measuredSize);
 
     if (w !== null && typeof w !== "undefined") node.setWidth(w);
     if (h !== null && typeof h !== "undefined") node.setHeight(h);
@@ -218,13 +179,9 @@ export const Box = ({
     }
   }
 
-  useEffect(() => {
-    changed();
-  }, [width, height, flex]);
-
-  if (root === NO_CONTEXT) {
-    const w: number | string | undefined = width ?? size?.width;
-    const h: number | string | undefined = height ?? size?.height;
+  if (isRoot) {
+    const w: number | string | undefined = width ?? measuredSize?.width;
+    const h: number | string | undefined = height ?? measuredSize?.height;
     console.log(
       displayName,
       "computedLayout",
@@ -237,11 +194,51 @@ export const Box = ({
       yoga.DIRECTION_LTR
     );
     if (state.current.node) {
-      layout = state.current.node?.getComputedLayout();
+      layout = state.current.node.getComputedLayout();
     }
   }
 
-  state.current.parent = parent;
+  // If any of our layout changes, request a reflow from root.
+  useEffect(() => {
+    changed();
+  }, [
+    layout.width,
+    layout.height,
+    layout.bottom,
+    layout.top,
+    layout.left,
+    layout.right,
+  ]);
+
+  useEffect(() => {
+    //If parent set and parent has changed
+    if (parent !== null && state.current.node === null) {
+      console.log("Creating node " + displayName);
+      const cfg = yoga.Config.create();
+      cfg.setPointScaleFactor(0);
+      const n: YogaNode = Node.createWithConfig(cfg);
+
+      n.setDisplay(yoga.DISPLAY_FLEX);
+      //@ts-ignore
+      n.displayName = displayName;
+      const index = parent.getChildCount();
+      console.log(
+        "****** Adding child " +
+          displayName +
+          " to " +
+          //@ts-ignore
+
+          parent.displayName +
+          " at " +
+          index
+      );
+
+      parent.insertChild(n, index);
+
+      state.current.node = n;
+      changed();
+    }
+  }, [parent]);
 
   return (
     //We always create a new empty auto size context, to kill the scope if there is a wrapping context
@@ -256,7 +253,7 @@ export const Box = ({
         <div
           style={{
             boxSizing: "border-box",
-            position: root === NO_CONTEXT ? "relative" : "absolute",
+            position: isRoot ? "relative" : "absolute",
             ...layout,
             ...style,
           }}

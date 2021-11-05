@@ -132,36 +132,38 @@ export const Box = ({
     };
   }
 
+  //   useEffect(() => {
+
   if (parent !== null && parent !== state.current.parent) {
     //If parent set and parent has changed
-    // if (parent !== null && state.current.node === null) {
-    console.log("Creating node " + displayName);
-    const cfg = yoga.Config.create();
-    cfg.setPointScaleFactor(0);
-    const n: YogaNode = Node.createWithConfig(cfg);
+    if (parent !== null && state.current.node === null) {
+      console.log("Creating node " + displayName);
+      const cfg = yoga.Config.create();
+      cfg.setPointScaleFactor(0);
+      const n: YogaNode = Node.createWithConfig(cfg);
 
-    n.setDisplay(yoga.DISPLAY_FLEX);
-    //@ts-ignore
-    n.displayName = displayName;
-    const index = parent.getChildCount();
-    console.log(
-      "****** Adding child " +
-        displayName +
-        " to " +
-        //@ts-ignore
+      n.setDisplay(yoga.DISPLAY_FLEX);
+      //@ts-ignore
+      n.displayName = displayName;
+      const index = parent.getChildCount();
+      console.log(
+        "****** Adding child " +
+          displayName +
+          " to " +
+          //@ts-ignore
 
-        parent.displayName +
-        " at " +
-        index
-    );
+          parent.displayName +
+          " at " +
+          index
+      );
 
-    parent.insertChild(n, index);
+      parent.insertChild(n, index);
 
-    state.current.node = n;
-    //changed();
+      state.current.node = n;
+      //   changed();
+    }
   }
-  //, [parent]);
-
+  //   }, [parent]);
   useEffect(() => {
     changed();
   }, [state.current.node]);
@@ -218,9 +220,17 @@ export const Box = ({
     }
   }
 
-  useEffect(() => {
-    changed();
-  }, [width, height, flex]);
+  //   useEffect(() => {
+  //     changed();
+  //   }, [
+  //     layout.width,
+  //     layout.height,
+  //     layout.bottom,
+  //     layout,
+  //     top,
+  //     layout.left,
+  //     layout.right,
+  //   ]);
 
   if (root === NO_CONTEXT) {
     const w: number | string | undefined = width ?? size?.width;
@@ -242,7 +252,6 @@ export const Box = ({
   }
 
   state.current.parent = parent;
-
   return (
     //We always create a new empty auto size context, to kill the scope if there is a wrapping context
     <AutoSizeContext.Provider value={DefaultAutoSizeContext}>

@@ -60,7 +60,7 @@ export const easeInOutQuint = function (t: number) {
  * @param tovalue - The end value
  * @param duration - duration of the animation
  * @param easing - the easing function, any function that maps the interval [0,1] -> [0,1]
- * @param dependencies - variable references, that when changed,
+ * @param dependencies - variable references, that when changed, trigger the animation
  */
 export const usePropertyAnimator = (
   fromvalue: number,
