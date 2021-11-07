@@ -16,7 +16,6 @@ import {
   AutoSizeContextType,
   DefaultAutoSizeContext,
 } from "./AutoSize";
-import { YogaNode } from "./Old";
 
 const NO_CONTEXT: Symbol = Symbol("NO_CONTEXT");
 
@@ -46,9 +45,9 @@ interface Size {
   height: number | undefined;
 }
 interface BoxState {
-  node: YogaNode | null;
-  parent: YogaNode | null;
-  childRenders: number;
+  node: yoga.YogaNode | null;
+  parent: yoga.YogaNode | null;
+  config: yoga.YogaConfig | null;
 }
 interface BoxProps {
   displayName?: string;
@@ -57,11 +56,14 @@ interface BoxProps {
   height?: number | string;
   flex?: number;
   flexDirection?: yoga.YogaFlexDirection;
-  margin?: number;
   marginTop?: number;
   marginBottom?: number;
   marginLeft?: number;
   marginRight?: number;
+  paddingTop?: number;
+  paddingBottom?: number;
+  paddingLeft?: number;
+  paddingRight?: number;
   minHeight?: number;
   minWidth?: number;
   border?: number;
@@ -76,11 +78,14 @@ export const Box = ({
   height,
   flex,
   flexDirection = yoga.FLEX_DIRECTION_ROW,
-  margin = 0,
-  marginTop = 0,
-  marginBottom = 0,
-  marginLeft = 0,
-  marginRight = 0,
+  marginTop,
+  marginBottom,
+  marginLeft,
+  marginRight,
+  paddingTop,
+  paddingBottom,
+  paddingLeft,
+  paddingRight,
   minHeight = 0,
   minWidth = 0,
   border = 0,
@@ -94,7 +99,7 @@ export const Box = ({
   //Pass on the reference we got from our parent
   let requestLayout = changed;
 
-  const state = useRef<BoxState>({ node: null, parent: null, childRenders: 0 });
+  const state = useRef<BoxState>({ node: null, parent: null, config: null });
   let measuredSize: Size = { width: 0, height: 0 };
 
   const [layoutRequests, setLayoutRequests] = useState<number>(0);
@@ -135,16 +140,22 @@ export const Box = ({
   if (flex) node.setFlex(flex);
 
   node.setFlexDirection(flexDirection);
-  node.setMargin(yoga.EDGE_ALL, margin);
-  node.setMargin(yoga.EDGE_BOTTOM, marginBottom);
-  node.setMargin(yoga.EDGE_TOP, marginTop);
-  node.setMargin(yoga.EDGE_LEFT, marginLeft);
-  node.setMargin(yoga.EDGE_RIGHT, marginRight);
+  marginBottom && node.setMargin(yoga.EDGE_BOTTOM, marginBottom);
+  marginTop && node.setMargin(yoga.EDGE_TOP, marginTop);
+  marginLeft && node.setMargin(yoga.EDGE_LEFT, marginLeft);
+  marginRight && node.setMargin(yoga.EDGE_RIGHT, marginRight);
+  paddingBottom && node.setPadding(yoga.EDGE_BOTTOM, paddingBottom);
+  paddingTop && node.setPadding(yoga.EDGE_TOP, paddingTop);
+  paddingLeft && node.setPadding(yoga.EDGE_LEFT, paddingLeft);
+  paddingRight && node.setPadding(yoga.EDGE_RIGHT, paddingRight);
+
   node.setMinHeight(minHeight);
 
   node.setMinWidth(minWidth);
   node.setBorder(yoga.EDGE_ALL, border);
+  console.log(justifyContent);
   node.setJustifyContent(justifyContent);
+  console.log(alignItems);
   node.setAlignItems(alignItems);
 
   //Calc layout only if root
@@ -191,7 +202,6 @@ export const Box = ({
     height,
     flex,
     flexDirection,
-    margin,
     marginTop,
     marginBottom,
     marginLeft,
@@ -203,6 +213,18 @@ export const Box = ({
     alignItems,
     state.current.node,
   ]);
+
+  useEffect(() => {
+    return () => {
+      console.log("Unmount");
+      if (state.current.node && state.current.parent) {
+        state.current.parent.removeChild(state.current.node);
+        if (isRoot) {
+          state.current.node.freeRecursive();
+        }
+      }
+    };
+  }, []);
 
   return (
     //We always create a new empty auto size context, to kill the scope if there is a wrapping context

@@ -35,7 +35,6 @@ const useSize = (
     toJSON: () => {},
   });
   const handler = () => {
-    console.log("SET SIZE", target?.current?.getBoundingClientRect());
     setSize(target?.current?.getBoundingClientRect());
   };
   useResizeObserver(target, handler);

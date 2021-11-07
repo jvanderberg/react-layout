@@ -12,9 +12,22 @@ interface BoxProps {
   width?: number | string;
   height?: number | string;
   flex?: number;
+  margin?: number;
+  marginTop?: number;
+  marginBottom?: number;
+  marginLeft?: number;
+  marginRight?: number;
+  padding?: number;
+  paddingTop?: number;
+  paddingBottom?: number;
+  paddingLeft?: number;
+  paddingRight?: number;
+  minHeight?: number;
+  minWidth?: number;
+  border?: number;
   style?: object;
+  centered?: boolean;
 }
-
 interface SpacerProps {
   displayName?: string;
   children?: ReactNode;
@@ -34,23 +47,44 @@ const boxFactory =
     height,
     flex,
     style,
+    margin,
+    marginLeft,
+    marginBottom,
+    marginRight,
+    marginTop,
+    padding,
+    paddingLeft,
+    paddingBottom,
+    paddingRight,
+    paddingTop,
+    centered,
   }: BoxProps): JSX.Element => {
+    let alignItems;
+    let justifyContent;
     const { parent } = useContext(BoxContext);
     let w = width;
     let h = height;
     let f = flex;
     if (parent?.getFlexDirection() === yoga.FLEX_DIRECTION_COLUMN) {
-      w = "100%";
+      w = w ?? "100%";
       if (typeof h === "undefined" && !flex) {
         f = 1;
       }
     }
     if (parent?.getFlexDirection() === yoga.FLEX_DIRECTION_ROW) {
-      h = "100%";
+      h = h ?? "100%";
       if (typeof w === "undefined" && !flex) {
         f = 1;
       }
     }
+    if (centered) {
+      justifyContent = yoga.JUSTIFY_CENTER;
+    }
+
+    const pl = paddingLeft ?? padding;
+    const pr = paddingRight ?? padding;
+    const pt = paddingTop ?? padding;
+    const pb = paddingBottom ?? padding;
 
     return (
       <Box
@@ -60,6 +94,16 @@ const boxFactory =
         width={w}
         height={h}
         style={style}
+        marginLeft={marginLeft}
+        marginRight={marginRight}
+        marginBottom={marginBottom}
+        marginTop={marginTop}
+        paddingLeft={pl}
+        paddingRight={pr}
+        paddingBottom={pb}
+        paddingTop={pt}
+        alignItems={alignItems}
+        justifyContent={justifyContent}
       >
         {children}
       </Box>
@@ -95,7 +139,6 @@ export const Spacer = ({
       f = 1;
     }
   }
-  console.log("******", w, h, f);
   return (
     <Box
       displayName={displayName}

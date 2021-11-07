@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import "./App.css";
 import { AutoSize } from "./AutoSize";
 import { HBox, Spacer, VBox } from "./Layout";
@@ -36,21 +36,47 @@ const Contents = ({ children, color }: ContentsType) => {
   );
 };
 function App() {
+  const [showStuff, setShowStuff] = useState<boolean>(true);
   return (
     <div className="App">
       <AutoSize viewPort={true}>
-        <HBox displayName="Root">
-          <Contents color="blue">
-            <Contents color="black">
-              <Contents color="green">
-                <Contents color="orange">
-                  <Contents color="black">
-                    <Contents color="gray">
-                      <Contents color="black">
-                        <Contents color="green">
-                          <Contents color="orange">
-                            <Contents color="black">
-                              <Contents color="gray"></Contents>
+        {showStuff && (
+          <HBox displayName="Root">
+            <Contents color="blue">
+              <Contents color="black">
+                <Contents color="green">
+                  <Contents color="orange">
+                    <Contents color="black">
+                      <Contents color="gray">
+                        <Contents color="black">
+                          <Contents color="green">
+                            <Contents color="orange">
+                              <Contents color="black">
+                                <Contents color="gray">
+                                  {" "}
+                                  <Contents color="blue">
+                                    <Contents color="black">
+                                      <Contents color="green">
+                                        <Contents color="orange">
+                                          <Contents color="black">
+                                            <Contents color="gray">
+                                              <Contents color="black">
+                                                <Contents color="green">
+                                                  <Contents color="orange">
+                                                    <Contents color="black">
+                                                      <Contents color="gray"></Contents>
+                                                    </Contents>
+                                                  </Contents>
+                                                </Contents>
+                                              </Contents>
+                                            </Contents>
+                                          </Contents>
+                                        </Contents>
+                                      </Contents>
+                                    </Contents>
+                                  </Contents>
+                                </Contents>
+                              </Contents>
                             </Contents>
                           </Contents>
                         </Contents>
@@ -60,9 +86,10 @@ function App() {
                 </Contents>
               </Contents>
             </Contents>
-          </Contents>
-        </HBox>
+          </HBox>
+        )}
       </AutoSize>
+      <button onClick={() => setShowStuff(!showStuff)}>Toggle</button>
     </div>
   );
 }
