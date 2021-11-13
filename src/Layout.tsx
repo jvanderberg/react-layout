@@ -8,7 +8,7 @@ import { Box, BoxContext } from "./Box";
 
 interface BoxProps {
   displayName?: string;
-  children?: ReactNode;
+  children?: any;
   width?: number | string;
   height?: number | string;
   flex?: number;
@@ -27,6 +27,7 @@ interface BoxProps {
   border?: number;
   style?: object;
   centered?: boolean;
+  spacing?: number | string;
 }
 interface SpacerProps {
   displayName?: string;
@@ -58,6 +59,7 @@ const boxFactory =
     paddingRight,
     paddingTop,
     centered,
+    spacing,
   }: BoxProps): JSX.Element => {
     let alignItems;
     let justifyContent;
@@ -105,7 +107,14 @@ const boxFactory =
         alignItems={alignItems}
         justifyContent={justifyContent}
       >
-        {children}
+        {spacing &&
+          React.Children.map(children, (child, i) => (
+            <>
+              {i > 0 && <Spacer width={spacing}></Spacer>}
+              {child}
+            </>
+          ))}
+        {typeof spacing === "undefined" && children}
       </Box>
     );
   };

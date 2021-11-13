@@ -5,7 +5,6 @@ import { easeInQuad, usePropertyAnimator } from "./usePropertyAnimator";
 const boxShadow = { boxShadow: "0px 0px 0.5px 0.5px blue" };
 
 const LeftPanel = ({ opened }: { opened: boolean }) => {
-  console.log("render");
   const wclose = usePropertyAnimator(200, 0.0, 500, easeInQuad, [opened]);
   const wopen = usePropertyAnimator(0.00001, 200, 500, easeInQuad, [opened]);
   return (

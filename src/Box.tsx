@@ -153,9 +153,7 @@ export const Box = ({
 
   node.setMinWidth(minWidth);
   node.setBorder(yoga.EDGE_ALL, border);
-  console.log(justifyContent);
   node.setJustifyContent(justifyContent);
-  console.log(alignItems);
   node.setAlignItems(alignItems);
 
   //Calc layout only if root
@@ -216,7 +214,6 @@ export const Box = ({
 
   useEffect(() => {
     return () => {
-      console.log("Unmount");
       if (state.current.node && state.current.parent) {
         state.current.parent.removeChild(state.current.node);
         if (isRoot) {

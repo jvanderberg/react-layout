@@ -82,10 +82,8 @@ export const usePropertyAnimator = (
       let val =
         (tovalue - fromvalue) * easing(currentDuration / duration) + fromvalue;
       setProperty(val);
-      console.log("here " + val);
       window.requestAnimationFrame(handleAnimationStep(startTime));
     } else {
-      console.log("here " + tovalue);
       setProperty(tovalue);
     }
   };

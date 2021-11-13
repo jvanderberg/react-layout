@@ -11,21 +11,11 @@ function App3() {
   return (
     <div className="App">
       <AutoSize viewPort={true}>
-        <VBox padding={10} displayName="Root" style={boxShadow} centered={true}>
-          <HBox centered={true} height={300} style={boxShadow}>
-            <VBox
-              width={200}
-              height={300}
-              style={boxShadow}
-              displayName="Contents"
-            ></VBox>
-
-            <VBox
-              width={200}
-              height={300}
-              style={boxShadow}
-              displayName="Contents2"
-            ></VBox>
+        <VBox displayName="Root" centered={true}>
+          <HBox centered={true} spacing="10%" height="75%">
+            <VBox width="20%" style={boxShadow} displayName="Contents"></VBox>
+            <VBox width="20%" style={boxShadow} displayName="Contents"></VBox>
+            <VBox width="20%" style={boxShadow} displayName="Contents"></VBox>
           </HBox>
         </VBox>
       </AutoSize>
