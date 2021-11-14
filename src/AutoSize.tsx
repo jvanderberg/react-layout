@@ -1,11 +1,5 @@
 import useResizeObserver from "@react-hook/resize-observer";
-import {
-  createContext,
-  ReactNode,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { createContext, ReactNode, useEffect, useRef, useState } from "react";
 
 export interface AutoSizeContextType {
   width: number | symbol | undefined;
@@ -38,7 +32,7 @@ const useSize = (
     setSize(target?.current?.getBoundingClientRect());
   };
   useResizeObserver(target, handler);
-  useLayoutEffect(() => {
+  useEffect(() => {
     setTimeout(() => setSize(target?.current?.getBoundingClientRect()));
   }, [target]);
 

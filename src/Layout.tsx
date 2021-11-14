@@ -7,6 +7,7 @@ import yoga from "yoga-layout-prebuilt";
 import { Box, BoxContext } from "./Box";
 
 interface BoxProps {
+  id?: string;
   displayName?: string;
   children?: any;
   width?: number | string;
@@ -42,6 +43,7 @@ interface SpacerProps {
 const boxFactory =
   (flexDirection: yoga.YogaFlexDirection) =>
   ({
+    id,
     displayName = "",
     children,
     width,
@@ -90,6 +92,7 @@ const boxFactory =
 
     return (
       <Box
+        id={id}
         displayName={displayName}
         flexDirection={flexDirection}
         flex={f}

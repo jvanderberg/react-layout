@@ -50,6 +50,7 @@ interface BoxState {
   config: yoga.YogaConfig | null;
 }
 interface BoxProps {
+  id?: string;
   displayName?: string;
   children?: ReactNode;
   width?: number | string;
@@ -72,6 +73,7 @@ interface BoxProps {
   style?: object;
 }
 export const Box = ({
+  id,
   displayName = "",
   children,
   width,
@@ -93,6 +95,7 @@ export const Box = ({
   alignItems = yoga.ALIGN_FLEX_START,
   style,
 }: BoxProps): JSX.Element => {
+  console.log("render");
   const { root, parent, changed } = useContext<BoxContextType>(BoxContext);
   const isRoot = root === NO_CONTEXT;
 
@@ -223,6 +226,7 @@ export const Box = ({
     };
   }, []);
 
+  console.log(id, displayName, layout);
   return (
     //We always create a new empty auto size context, to kill the scope if there is a wrapping context
     <AutoSizeContext.Provider value={DefaultAutoSizeContext}>
@@ -234,6 +238,7 @@ export const Box = ({
         }}
       >
         <div
+          id={id}
           style={{
             boxSizing: "border-box",
             position: isRoot ? "relative" : "absolute",
