@@ -95,7 +95,6 @@ export const Box = ({
   alignItems = yoga.ALIGN_FLEX_START,
   style,
 }: BoxProps): JSX.Element => {
-  console.log("render");
   const { root, parent, changed } = useContext<BoxContextType>(BoxContext);
   const isRoot = root === NO_CONTEXT;
 
@@ -136,11 +135,10 @@ export const Box = ({
   // measuredSize will be undefined if not root
   const w = width ?? measuredSize?.width;
   const h = height ?? measuredSize?.height;
-
   //Set our layout from props
   if (w !== null && typeof w !== "undefined") node.setWidth(w);
   if (h !== null && typeof h !== "undefined") node.setHeight(h);
-  if (flex) node.setFlex(flex);
+  node.setFlex(flex ?? 0);
 
   node.setFlexDirection(flexDirection);
   marginBottom && node.setMargin(yoga.EDGE_BOTTOM, marginBottom);
@@ -226,7 +224,6 @@ export const Box = ({
     };
   }, []);
 
-  console.log(id, displayName, layout);
   return (
     //We always create a new empty auto size context, to kill the scope if there is a wrapping context
     <AutoSizeContext.Provider value={DefaultAutoSizeContext}>
