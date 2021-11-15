@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "parcel src/index.html",
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint --max-warnings 0  \"src/**/*.{js,ts,tsx}\""
   },
   "jest": {
     "transform": {
@@ -37,8 +38,14 @@
   "devDependencies": {
     "@parcel/reporter-bundle-analyzer": "^2.0.0",
     "@testing-library/jest-dom": "^5.15.0",
+    "@types/enzyme": "^3.10.10",
+    "@types/enzyme-adapter-react-16": "^1.0.6",
     "@types/react": "^17.0.30",
     "@types/react-dom": "^17.0.9",
+    "@typescript-eslint/eslint-plugin": "^5.3.1",
+    "@typescript-eslint/parser": "^5.3.1",
+    "eslint": "^8.2.0",
+    "eslint-plugin-react": "^7.27.0",
     "identity-obj-proxy": "^3.0.0",
     "parcel": "^2.0.0",
     "regenerator-runtime": "^0.13.9",

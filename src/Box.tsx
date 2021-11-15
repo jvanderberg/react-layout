@@ -1,44 +1,24 @@
 // @ts-check
 
-import useResizeObserver from "@react-hook/resize-observer";
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  useMemo,
-  ReactNode,
-} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createContext, useContext } from "react";
 import yoga, { Node } from "yoga-layout-prebuilt";
-import {
-  AutoSizeContext,
-  AutoSizeContextType,
-  DefaultAutoSizeContext,
-} from "./AutoSize";
+import { AutoSizeContext, DefaultAutoSizeContext } from "./AutoSize";
 
-const NO_CONTEXT: Symbol = Symbol("NO_CONTEXT");
+const NO_CONTEXT = Symbol("NO_CONTEXT");
 
 interface BoxContextType {
-  root: yoga.YogaNode | Symbol | null;
+  root: yoga.YogaNode | symbol | null;
   parent: yoga.YogaNode | null;
   changed: () => void;
 }
 const defaultContext: BoxContextType = {
   root: NO_CONTEXT,
   parent: null,
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   changed: () => {},
 };
 
-const debounce = (func: Function, timeout: number = 300) => {
-  let timer: NodeJS.Timeout;
-  return (...args: any) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      func.apply(this, args);
-    }, timeout);
-  };
-};
 export const BoxContext = createContext<BoxContextType>(defaultContext);
 interface Size {
   width: number | undefined;
@@ -51,8 +31,6 @@ interface BoxState {
 }
 interface BoxProps {
   id?: string;
-  displayName?: string;
-  children?: ReactNode;
   width?: number | string;
   height?: number | string;
   flex?: number;
@@ -72,12 +50,11 @@ interface BoxProps {
   alignItems?: yoga.YogaAlign;
   style?: object;
 }
-export const Box = ({
+export const Box: React.FC<BoxProps> = ({
   id,
-  displayName = "",
-  children,
   width,
   height,
+  children,
   flex,
   flexDirection = yoga.FLEX_DIRECTION_ROW,
   marginTop,
@@ -94,7 +71,7 @@ export const Box = ({
   justifyContent = yoga.JUSTIFY_FLEX_START,
   alignItems = yoga.ALIGN_FLEX_START,
   style,
-}: BoxProps): JSX.Element => {
+}) => {
   const { root, parent, changed } = useContext<BoxContextType>(BoxContext);
   const isRoot = root === NO_CONTEXT;
 
@@ -102,9 +79,9 @@ export const Box = ({
   let requestLayout = changed;
 
   const state = useRef<BoxState>({ node: null, parent: null, config: null });
-  let measuredSize: Size = { width: 0, height: 0 };
+  const measuredSize: Size = { width: 0, height: 0 };
 
-  const [layoutRequests, setLayoutRequests] = useState<number>(0);
+  const [, setLayoutRequests] = useState<number>(0);
   let rootNode = root;
   const contextSize = useContext(AutoSizeContext);
 
@@ -119,8 +96,6 @@ export const Box = ({
     //Use sub-pixel sizing
     cfg.setPointScaleFactor(0);
     const n = Node.createWithConfig(cfg);
-    //@ts-ignore
-    n.displayName = displayName;
     state.current.node = n;
   }
 
@@ -176,7 +151,8 @@ export const Box = ({
   //Get our computed CSS layout
   const computedLayout = state.current.node.getComputedLayout();
 
-  let layout: any = computedLayout || {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const layout: any = computedLayout || {
     width: 0,
     height: 0,
     left: 0,
@@ -185,7 +161,7 @@ export const Box = ({
     right: 0,
   };
 
-  for (let key of Object.keys(layout)) {
+  for (const key of Object.keys(layout)) {
     if (Number.isNaN(layout[key])) {
       delete layout[key];
     }

@@ -1,6 +1,4 @@
-/* global performance */
-
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 export const linear = function (t: number) {
   return t;
@@ -67,11 +65,12 @@ export const usePropertyAnimator = (
   tovalue: number,
   duration: number,
   easing: (val: number) => number = linear,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dependencies: Array<any>
 ) => {
   const [property, setProperty] = useState<number>(tovalue);
-  let startTime: number = 0;
-  const handleAnimationStep = (startTime: number) => (timestamp: number) => {
+  let startTime = 0;
+  const handleAnimationStep = (startTime: number) => () => {
     let currentDuration = 0;
     if (typeof performance !== "undefined") {
       currentDuration = performance.now() - startTime;
@@ -79,7 +78,7 @@ export const usePropertyAnimator = (
       currentDuration = Date.now() - startTime;
     }
     if (currentDuration < duration) {
-      let val =
+      const val =
         (tovalue - fromvalue) * easing(currentDuration / duration) + fromvalue;
       setProperty(val);
       window.requestAnimationFrame(handleAnimationStep(startTime));

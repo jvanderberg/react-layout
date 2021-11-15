@@ -1,21 +1,18 @@
-import { Fragment, useState } from "react";
 import "./App.css";
 import { AutoSize } from "./AutoSize";
-import { HBox, Spacer, VBox } from "./Layout";
-import { easeInQuad, usePropertyAnimator } from "./usePropertyAnimator";
+import { HBox, VBox } from "./Layout";
+import React from "react";
 const boxShadow = { boxShadow: "0px 0px 0.5px 0.5px blue" };
 
 function App3() {
-  const [opened, setOpened] = useState<boolean>(true);
-
   return (
     <div className="App">
       <AutoSize viewPort={true}>
-        <VBox displayName="Root" centered={true}>
+        <VBox centered={true}>
           <HBox centered={true} spacing="10%" height="75%">
-            <VBox width="20%" style={boxShadow} displayName="Contents"></VBox>
-            <VBox width="20%" style={boxShadow} displayName="Contents"></VBox>
-            <VBox width="20%" style={boxShadow} displayName="Contents"></VBox>
+            <VBox width="20%" style={boxShadow}></VBox>
+            <VBox width="20%" style={boxShadow}></VBox>
+            <VBox width="20%" style={boxShadow}></VBox>
           </HBox>
         </VBox>
       </AutoSize>

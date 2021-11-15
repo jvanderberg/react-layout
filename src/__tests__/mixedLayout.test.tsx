@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Dispatch, useState } from "react";
 import { mount } from "enzyme";
 import { configure } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
@@ -6,11 +6,29 @@ import { HBox, VBox } from "../Layout";
 import "regenerator-runtime";
 import { act } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
-import { isExportDeclaration } from "typescript";
 
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const DynamicVBox = ({ setter, id, width, height, flex, ...props }) => {
+interface Setter {
+  [key: string]: {
+    setWidth: Dispatch<React.SetStateAction<number | undefined>>;
+    setHeight: Dispatch<React.SetStateAction<number | undefined>>;
+    setFlex: Dispatch<React.SetStateAction<number | undefined>>;
+  };
+}
+interface DBoxProps {
+  setter: Setter;
+  id: string;
+  width?: number;
+  height?: number;
+  flex?: number;
+}
+const DynamicVBox: React.FC<DBoxProps> = ({
+  setter,
+  id,
+  width,
+  height,
+  flex,
+  ...props
+}) => {
   const [lwidth, setWidth] = useState(width);
   const [lheight, setHeight] = useState(height);
   const [lflex, setFlex] = useState(flex);
@@ -20,25 +38,27 @@ const DynamicVBox = ({ setter, id, width, height, flex, ...props }) => {
   );
 };
 
-function App({ width, height, setter }) {
+const App: React.FC<DBoxProps> = ({ width, height, setter }) => {
   return (
     <div className="App">
-      <HBox id="root" displayName="Root" width={width} height={height}>
+      <HBox id="root" width={width} height={height}>
         <DynamicVBox setter={setter} id="child1" flex={2}></DynamicVBox>
         <DynamicVBox setter={setter} id="child2" flex={2}></DynamicVBox>
         <DynamicVBox setter={setter} id="child3" width={20}></DynamicVBox>
       </HBox>
     </div>
   );
-}
+};
 
 configure({ adapter: new Adapter() });
 
 describe("App", () => {
-  it("basic flex layout", async () => {
-    const setter = {};
-    const app = mount(<App width={100} height={50} setter={setter} />);
-    await wait(100);
+  it("Test basic flex layouts with changing width/flex", async () => {
+    const setter: Setter = {};
+    const app = mount(
+      <App id="base" width={100} height={50} setter={setter} />
+    );
+    //await wait(100);
     const root = app.find("#root").first().getDOMNode();
     const child1 = app.find("#child1").first().getDOMNode();
     const child2 = app.find("#child2").first().getDOMNode();
@@ -61,7 +81,7 @@ describe("App", () => {
     expect(child3).toHaveStyle("height: 50px");
 
     act(() => setter.child3.setFlex(4));
-    await wait(100);
+    //await wait(100);
     expect(child1).toHaveStyle("left: 0px");
     expect(child1).toHaveStyle("width: 25px");
     expect(child1).toHaveStyle("height: 50px");
@@ -77,9 +97,9 @@ describe("App", () => {
       setter.child1.setFlex(undefined);
       setter.child1.setWidth(50);
       setter.child3.setFlex(2);
-      await wait(100);
+      //await wait(100);
     });
-    await wait(100);
+    //await wait(100);
     expect(child1).toHaveStyle("left: 0px");
     expect(child1).toHaveStyle("width: 50px");
     expect(child1).toHaveStyle("height: 50px");

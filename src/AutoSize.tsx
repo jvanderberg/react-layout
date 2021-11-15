@@ -1,5 +1,11 @@
 import useResizeObserver from "@react-hook/resize-observer";
-import { createContext, ReactNode, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 export interface AutoSizeContextType {
   width: number | symbol | undefined;
@@ -26,6 +32,7 @@ const useSize = (
     left: 0,
     right: 0,
     top: 0,
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     toJSON: () => {},
   });
   const handler = () => {

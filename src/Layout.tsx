@@ -1,15 +1,12 @@
 // @ts-check
 
-import useResizeObserver from "@react-hook/resize-observer";
-import React, { ReactNode } from "react";
+import React from "react";
 import { useContext } from "react";
 import yoga from "yoga-layout-prebuilt";
 import { Box, BoxContext } from "./Box";
 
 interface BoxProps {
   id?: string;
-  displayName?: string;
-  children?: any;
   width?: number | string;
   height?: number | string;
   flex?: number;
@@ -31,8 +28,6 @@ interface BoxProps {
   spacing?: number | string;
 }
 interface SpacerProps {
-  displayName?: string;
-  children?: ReactNode;
   width?: number | string;
   height?: number | string;
   size?: number | string;
@@ -40,99 +35,103 @@ interface SpacerProps {
   style?: object;
 }
 
-const boxFactory =
-  (flexDirection: yoga.YogaFlexDirection) =>
-  ({
-    id,
-    displayName = "",
-    children,
-    width,
-    height,
-    flex,
-    style,
-    margin,
-    marginLeft,
-    marginBottom,
-    marginRight,
-    marginTop,
-    padding,
-    paddingLeft,
-    paddingBottom,
-    paddingRight,
-    paddingTop,
-    centered,
-    spacing,
-  }: BoxProps): JSX.Element => {
-    let alignItems;
-    let justifyContent;
-    const { parent } = useContext(BoxContext);
-    let w = width;
-    let h = height;
-    let f = flex;
-    if (parent?.getFlexDirection() === yoga.FLEX_DIRECTION_COLUMN) {
-      w = w ?? "100%";
-      if (typeof h === "undefined" && !flex) {
-        f = 1;
+const boxFactory = (flexDirection: yoga.YogaFlexDirection) =>
+  // eslint-disable-next-line react/display-name
+  {
+    const FactoryBox: React.FC<BoxProps> = ({
+      id,
+      children,
+      width,
+      height,
+      flex,
+      style,
+      margin,
+      marginLeft,
+      marginBottom,
+      marginRight,
+      marginTop,
+      padding,
+      paddingLeft,
+      paddingBottom,
+      paddingRight,
+      paddingTop,
+      centered,
+      spacing,
+    }) => {
+      let alignItems;
+      let justifyContent;
+      const { parent } = useContext(BoxContext);
+      let w = width;
+      let h = height;
+      let f = flex;
+      if (parent?.getFlexDirection() === yoga.FLEX_DIRECTION_COLUMN) {
+        w = w ?? "100%";
+        if (typeof h === "undefined" && !flex) {
+          f = 1;
+        }
       }
-    }
-    if (parent?.getFlexDirection() === yoga.FLEX_DIRECTION_ROW) {
-      h = h ?? "100%";
-      if (typeof w === "undefined" && !flex) {
-        f = 1;
+      if (parent?.getFlexDirection() === yoga.FLEX_DIRECTION_ROW) {
+        h = h ?? "100%";
+        if (typeof w === "undefined" && !flex) {
+          f = 1;
+        }
       }
-    }
-    if (centered) {
-      justifyContent = yoga.JUSTIFY_CENTER;
-    }
+      if (centered) {
+        justifyContent = yoga.JUSTIFY_CENTER;
+      }
 
-    const pl = paddingLeft ?? padding;
-    const pr = paddingRight ?? padding;
-    const pt = paddingTop ?? padding;
-    const pb = paddingBottom ?? padding;
+      const pl = paddingLeft ?? padding;
+      const pr = paddingRight ?? padding;
+      const pt = paddingTop ?? padding;
+      const pb = paddingBottom ?? padding;
+      const ml = marginLeft ?? margin;
+      const mr = marginRight ?? margin;
+      const mt = marginTop ?? margin;
+      const mb = marginBottom ?? margin;
 
-    return (
-      <Box
-        id={id}
-        displayName={displayName}
-        flexDirection={flexDirection}
-        flex={f}
-        width={w}
-        height={h}
-        style={style}
-        marginLeft={marginLeft}
-        marginRight={marginRight}
-        marginBottom={marginBottom}
-        marginTop={marginTop}
-        paddingLeft={pl}
-        paddingRight={pr}
-        paddingBottom={pb}
-        paddingTop={pt}
-        alignItems={alignItems}
-        justifyContent={justifyContent}
-      >
-        {spacing &&
-          React.Children.map(children, (child, i) => (
-            <>
-              {i > 0 && <Spacer width={spacing}></Spacer>}
-              {child}
-            </>
-          ))}
-        {typeof spacing === "undefined" && children}
-      </Box>
-    );
+      return (
+        <Box
+          id={id}
+          flexDirection={flexDirection}
+          flex={f}
+          width={w}
+          height={h}
+          style={style}
+          marginLeft={ml}
+          marginRight={mr}
+          marginBottom={mb}
+          marginTop={mt}
+          paddingLeft={pl}
+          paddingRight={pr}
+          paddingBottom={pb}
+          paddingTop={pt}
+          alignItems={alignItems}
+          justifyContent={justifyContent}
+        >
+          {spacing &&
+            React.Children.map(children, (child, i) => (
+              <>
+                {i > 0 && <Spacer width={spacing}></Spacer>}
+                {child}
+              </>
+            ))}
+          {typeof spacing === "undefined" && children}
+        </Box>
+      );
+    };
+    return FactoryBox;
   };
 
 export const VBox = boxFactory(yoga.FLEX_DIRECTION_COLUMN);
 export const HBox = boxFactory(yoga.FLEX_DIRECTION_ROW);
 
-export const Spacer = ({
-  displayName = "",
+export const Spacer: React.FC<SpacerProps> = ({
   size,
   flex,
   width,
   height,
   style,
-}: SpacerProps): JSX.Element => {
+}) => {
   const { parent } = useContext(BoxContext);
   let w = width;
   let h = height;
@@ -151,13 +150,5 @@ export const Spacer = ({
       f = 1;
     }
   }
-  return (
-    <Box
-      displayName={displayName}
-      flex={f}
-      width={w}
-      height={h}
-      style={style}
-    />
-  );
+  return <Box flex={f} width={w} height={h} style={style} />;
 };
