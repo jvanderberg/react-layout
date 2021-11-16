@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import "./App.css";
+import React from "react";
 import { AutoSize } from "../AutoSize";
 import { HBox, VBox } from "../Layout";
 interface ContentsType {
@@ -12,61 +11,52 @@ const Contents = ({ children, color }: ContentsType) => {
   const boxShadow = { boxShadow: "0px 0px 0.5px 0.5px " + color };
 
   return (
-    <>
-      <HBox>
-        <VBox width={"20%"} style={boxShadow}>
-          <VBox style={boxShadow}></VBox>
-          <VBox style={boxShadow}></VBox>
-          <VBox style={boxShadow}></VBox>
+    <HBox>
+      <VBox width={"20%"} style={boxShadow}>
+        <VBox style={boxShadow}></VBox>
+        <VBox style={boxShadow}></VBox>
+        <VBox style={boxShadow}></VBox>
+      </VBox>
+      <VBox width={"60%"} style={boxShadow}>
+        <VBox flex={1} style={boxShadow}></VBox>
+        <VBox flex={3} style={boxShadow}>
+          {children}
         </VBox>
-        <VBox width={"60%"} style={boxShadow}>
-          <VBox flex={1} style={boxShadow}></VBox>
-          <VBox flex={3} style={boxShadow}>
-            {children}
-          </VBox>
-          <VBox flex={1} style={boxShadow}></VBox>
-        </VBox>
-        <VBox width={"20%"} style={boxShadow}>
-          <VBox style={boxShadow}></VBox>
-          <VBox style={boxShadow}></VBox>
-          <VBox style={boxShadow}></VBox>
-        </VBox>
-      </HBox>
-    </>
+        <VBox flex={1} style={boxShadow}></VBox>
+      </VBox>
+      <VBox width={"20%"} style={boxShadow}>
+        <VBox style={boxShadow}></VBox>
+        <VBox style={boxShadow}></VBox>
+        <VBox style={boxShadow}></VBox>
+      </VBox>
+    </HBox>
   );
 };
 function App() {
-  const [showStuff, setShowStuff] = useState<boolean>(true);
   return (
-    <div className="App">
-      <AutoSize viewPort={true}>
-        {showStuff && (
-          <HBox>
-            <Contents color="blue">
+    <AutoSize viewPort={true}>
+      <Contents color="blue">
+        <Contents color="black">
+          <Contents color="green">
+            <Contents color="orange">
               <Contents color="black">
-                <Contents color="green">
-                  <Contents color="orange">
-                    <Contents color="black">
-                      <Contents color="gray">
+                <Contents color="gray">
+                  <Contents color="black">
+                    <Contents color="green">
+                      <Contents color="orange">
                         <Contents color="black">
-                          <Contents color="green">
-                            <Contents color="orange">
+                          <Contents color="gray">
+                            <Contents color="blue">
                               <Contents color="black">
-                                <Contents color="gray">
-                                  <Contents color="blue">
+                                <Contents color="green">
+                                  <Contents color="orange">
                                     <Contents color="black">
-                                      <Contents color="green">
-                                        <Contents color="orange">
-                                          <Contents color="black">
-                                            <Contents color="gray">
+                                      <Contents color="gray">
+                                        <Contents color="black">
+                                          <Contents color="green">
+                                            <Contents color="orange">
                                               <Contents color="black">
-                                                <Contents color="green">
-                                                  <Contents color="orange">
-                                                    <Contents color="black">
-                                                      <Contents color="gray"></Contents>
-                                                    </Contents>
-                                                  </Contents>
-                                                </Contents>
+                                                <Contents color="gray"></Contents>
                                               </Contents>
                                             </Contents>
                                           </Contents>
@@ -85,11 +75,10 @@ function App() {
                 </Contents>
               </Contents>
             </Contents>
-          </HBox>
-        )}
-      </AutoSize>
-      <button onClick={() => setShowStuff(!showStuff)}>Toggle</button>
-    </div>
+          </Contents>
+        </Contents>
+      </Contents>
+    </AutoSize>
   );
 }
 

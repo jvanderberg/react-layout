@@ -36,7 +36,7 @@ Let's start with an example
 </VBox>
 ```
 
-Here's two versions of that layout with difference viewport aspect ratios:
+Here's two versions of that layout with different viewport aspect ratios:
 
 ![Wide](/wide.png)
 
@@ -49,3 +49,7 @@ Its only child is an HBox, which is also centered. Its height is 75%, meaning it
 The HBox itself is centered, so its children will be layed out horizontally and centered. The HBox also has spacing set to "10%", this means space will be injected between elements, taking up 10% of the available width for each spacer.
 
 This is one of the benefits of programmatic layout, as this is very difficult to accomplish with pure CSS.
+
+### Ok, that's kind nice, but isn't this incredibly slow?
+
+No, not really. Run `npm run start` to see the torture test example. This has a deeply nested complex layout that's bound to the size of the viewpoint. Every time that viewport says changes, the entire layout is recalculated and every single child Box is re-rendered.
