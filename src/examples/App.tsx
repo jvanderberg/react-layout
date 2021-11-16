@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./App.css";
-import { AutoSize } from "./AutoSize";
-import { HBox, VBox } from "./Layout";
+import { AutoSize } from "../AutoSize";
+import { HBox, VBox } from "../Layout";
 interface ContentsType {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   children?: any;

@@ -1,6 +1,5 @@
-import "./App.css";
-import { AutoSize } from "./AutoSize";
-import { HBox, VBox } from "./Layout";
+import { AutoSize } from "../AutoSize";
+import { HBox, VBox } from "../Layout";
 import React from "react";
 const boxShadow = { boxShadow: "0px 0px 0.5px 0.5px blue" };
 

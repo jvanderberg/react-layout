@@ -1,70 +1,51 @@
-# Getting Started with Create React App
+# react-layout - Programmatic layout for web applications
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## VBox and HBox for the web
 
-## Available Scripts
+react-layout uses the 'yoga' flex layout engine to provide predictable, programmatic layout to web applications. What's 'programmatic' layout? In this context it means using absolute CSS positioning that's calculated in JS.
 
-In the project directory, you can run:
+Though react-layout does use CSS under the hood, the CSS it uses is boiled down to absolute layout, top, left, width, height, all the positional calculations are done in JS.
 
-### `yarn start`
+### Why would you do this?
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Mostly because I can, but also because I think this fits a niche. I know we've had flexbox for quite some time, but I've never been satisfied with a pure CSS approach to controlling the layout of a web application.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+CSS was designed to create responsive, re-flowable documents and I've never felt was a great fit for complex application layouts, layouts that need _some_ flexibility, but don't need to be 100% responsive.
 
-### `yarn test`
+### That's crazy, why don't you just absolutely positive everything in your 'apps' and be done with it?
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Absolute positing is far too inflexible because you can't deliver your app with a fixed viewport size (unless you've got a time machine to 1999). Between a fixed viewport and a purely responsive web application, there's a nice medium where you have a large, desktop sized viewport, and you want your content to adapt to the size of the viewport, _within reason_.
 
-### `yarn build`
+This implementation of VBox and HBox sits squarely in that goldilocks zone, providing fast, predictible and responsive layout for desktop sized viewports.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Why not just use flexbox?
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+react-layout uses 'yoga', a C++ implementation of the flexbox layout engine (compiled down to asm.js). But that's not really the point here. How easily have you ever been able to just create a flexbox layout that does what you want it to do? Is it align-items? Or is it justify-content. flex-grow? flex-shrink?
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The flexbox CSS api is complex, and it's overkill in many situations. VBox and HBox prefers composition and nesting to complex configuration. With just a few properties and nested VBox/HBox layouts you can accomplish highly complex layouts that adapt and change as the available space changes.
 
-### `yarn eject`
+Let's start with an example
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```javascript
+<VBox centered={true}>
+  <HBox centered={true} spacing="10%" height="75%">
+    <VBox width="20%" />
+    <VBox width="20%" />
+    <VBox width="20%" />
+  </HBox>
+</VBox>
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Here's two versions of that layout with difference viewport aspect ratios:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+![Wide](/wide.png)
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+![Wide](/narrow.png)
 
-## Learn More
+The wrapping tag is a centered VBox, this means it will layout its children vertically within itself, splitting any left over space the children do not consume equally above and below the children.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Its only child is an HBox, which is also centered. Its height is 75%, meaning it will always consume 75% of the height of it's parent.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+The HBox itself is centered, so its children will be layed out horizontally and centered. The HBox also has spacing set to "10%", this means space will be injected between elements, taking up 10% of the available width for each spacer.
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This is one of the benefits of programmatic layout, as this is very difficult to accomplish with pure CSS.

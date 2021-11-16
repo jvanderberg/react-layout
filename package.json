@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "parcel src/index.html",
-    "test": "jest",
+    "test": "jest src/**/*.test.tsx",
     "lint": "eslint --max-warnings 0  \"src/**/*.{js,ts,tsx}\""
   },
   "jest": {
