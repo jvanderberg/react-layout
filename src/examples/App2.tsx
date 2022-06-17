@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "./App.css";
 import { HBox, Spacer, VBox } from "../Layout";
 import { easeInQuad, usePropertyAnimator } from "./usePropertyAnimator";
 const boxShadow = { boxShadow: "0px 0px 0.5px 0.5px blue" };
