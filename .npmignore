@@ -1,0 +1,9 @@
+.vscode
+.parcel-cache
+yarn-error.log
+node_modules
+.devcontainer
+src
+.eslintrc.js
+babel.config.js
+tsconfig.json
