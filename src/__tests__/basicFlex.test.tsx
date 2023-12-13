@@ -1,8 +1,9 @@
 import React, { StrictMode } from "react";
 import { HBox, VBox } from "../Layout";
 import "regenerator-runtime";
-import "@testing-library/jest-dom/extend-expect";
-import { render, screen } from '@testing-library/react'
+import { render, screen, cleanup } from '@testing-library/react'
+import { describe, it, expect, afterEach } from "vitest";
+
 interface BoxProps {
     width: number;
     height: number;
@@ -12,7 +13,7 @@ interface BoxProps {
 const App: React.FC<BoxProps> = ({ width, height }) => {
     return (
         <StrictMode>
-            <div className="App">
+            <div className="App1">
                 <HBox id="root" width={width} height={height}>
                     <VBox id="child1" flex={1}></VBox>
                     <VBox id="child2" flex={2}></VBox>
@@ -26,7 +27,7 @@ const App: React.FC<BoxProps> = ({ width, height }) => {
 const App2: React.FC<BoxProps> = ({ width, height, centered }) => {
     return (
         <StrictMode>
-            <div className="App">
+            <div className="App2">
                 <HBox id="root" centered={centered} width={width} height={height}>
                     <VBox id="child1" width={10}></VBox>
                     <VBox id="child2" width={10}></VBox>
@@ -40,7 +41,7 @@ const App2: React.FC<BoxProps> = ({ width, height, centered }) => {
 const App3: React.FC<BoxProps> = ({ width, height, centered }) => {
     return (
         <StrictMode>
-            <div className="App">
+            <div className="App3">
                 <VBox id="root" centered={centered} width={width} height={height}>
                     <VBox id="child1" height={10}></VBox>
                     <VBox id="child2" height={10}></VBox>
@@ -53,6 +54,10 @@ const App3: React.FC<BoxProps> = ({ width, height, centered }) => {
 
 
 describe("App", () => {
+    afterEach(() => {
+        // this is necessary
+        cleanup();
+    });
     it("basic flex layout", () => {
         render(<App width={100} height={50} />);
         const root = screen.getByTestId("root")

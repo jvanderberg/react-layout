@@ -13,6 +13,13 @@ export default defineConfig({
 		port: 3000,
 		host: '0.0.0.0'
 	},
+    test: {
+        setupFiles: ['./setupTest.js'],
+        global: true,
+        environment: 'jsdom',
+        threads: true
+    
+    },
 	build: {
 		sourcemap: true
 	}

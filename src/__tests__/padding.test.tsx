@@ -1,8 +1,7 @@
 import React, { StrictMode } from "react";
-import { mount } from "enzyme";
 import { HBox, VBox } from "../Layout";
-import "@testing-library/jest-dom/extend-expect";
-import { render, screen } from '@testing-library/react'
+import { render, screen, cleanup } from '@testing-library/react'
+import { describe, it, expect, afterEach } from "vitest";
 
 interface BoxProps {
     width: number;
@@ -72,6 +71,10 @@ const App3: React.FC<BoxProps> = ({ width, height, centered }) => {
 
 
 describe("App", () => {
+    afterEach(() => {
+        // this is necessary
+        cleanup();
+    });
     it("basic flex layout with padding", () => {
         render(<App width={110} height={50} />);
         const root = screen.getByTestId("root")

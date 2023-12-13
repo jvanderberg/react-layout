@@ -1,8 +1,7 @@
 import React, { StrictMode } from "react";
 import { HBox, VBox } from "../Layout";
-import "@testing-library/jest-dom/extend-expect";
-import { render, screen } from '@testing-library/react'
-
+import { render, screen, cleanup } from '@testing-library/react'
+import { describe, it, expect, afterEach } from "vitest";
 
 interface BoxProps {
     width: number;
@@ -27,6 +26,10 @@ const App: React.FC<BoxProps> = ({ width, height }) => {
 
 
 describe("App", () => {
+    afterEach(() => {
+        // this is necessary
+        cleanup();
+    });
     it("basic proportional layout, centered with spacing", () => {
         const { rerender } = render(<App width={100} height={100} />);
         const centered = screen.getByTestId("centered");

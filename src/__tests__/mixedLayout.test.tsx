@@ -1,8 +1,8 @@
 import React, { Dispatch, StrictMode, useState } from "react";
 import { HBox, VBox } from "../Layout";
 import { act } from "@testing-library/react";
-import "@testing-library/jest-dom/extend-expect";
-import { render, screen } from '@testing-library/react'
+import { render, screen, cleanup } from '@testing-library/react'
+import { describe, it, expect, afterEach } from "vitest";
 
 interface Setter {
     [key: string]: {
@@ -51,6 +51,10 @@ const App: React.FC<DBoxProps> = ({ width, height, setter }) => {
 
 
 describe("App", () => {
+    afterEach(() => {
+        // this is necessary
+        cleanup();
+    });
     it("Test basic flex layouts with changing width/flex", async () => {
         const setter: Setter = {};
         render(

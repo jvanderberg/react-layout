@@ -1,7 +1,8 @@
 import React, { ReactNode, StrictMode } from "react";
 import { HBox, VBox } from "../Layout";
-import "@testing-library/jest-dom/extend-expect";
-import { render, screen } from '@testing-library/react'
+import { render, screen, cleanup } from '@testing-library/react'
+import { describe, it, expect, afterEach } from "vitest";
+
 interface UnitProps {
     level: number;
     children?: ReactNode
@@ -48,6 +49,10 @@ const App: React.FC<BoxProps> = ({ width, height }) => {
 
 
 describe("App", () => {
+    afterEach(() => {
+        // this is necessary
+        cleanup();
+    });
     it("deep nesting", () => {
         const { rerender } = render(<App width={1000} height={1000} />);
         // await wait(100);
