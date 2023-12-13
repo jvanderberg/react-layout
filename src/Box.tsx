@@ -1,15 +1,17 @@
 // @ts-check
 
-import React, { ReactNode, useEffect, useRef, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import { createContext, useContext } from "react";
-import yoga, { Node, YogaNode } from "yoga-layout-prebuilt";
+import yoga, { Node, FlexDirection, Justify, Align } from "yoga-layout/sync";
 import { AutoSizeContext, DefaultAutoSizeContext } from "./AutoSize";
+import { } from "yoga-layout";
+
 
 const NO_CONTEXT = Symbol("NO_CONTEXT");
 
 interface BoxContextType {
-    root: yoga.YogaNode | symbol | null;
-    parent: yoga.YogaNode | null;
+    root: Node | symbol | null;
+    parent: Node | null;
     changed: () => void;
 }
 
@@ -28,10 +30,10 @@ interface Size {
 
 interface BoxProps {
     id?: string;
-    width?: number | string;
-    height?: number | string;
+    width?: number | "auto" | `${number}%`;
+    height?: number | "auto" | `${number}%`;
     flex?: number;
-    flexDirection?: yoga.YogaFlexDirection;
+    flexDirection?: FlexDirection;
     marginTop?: number;
     marginBottom?: number;
     marginLeft?: number;
@@ -43,8 +45,8 @@ interface BoxProps {
     minHeight?: number;
     minWidth?: number;
     border?: number;
-    justifyContent?: yoga.YogaJustifyContent;
-    alignItems?: yoga.YogaAlign;
+    justifyContent?: Justify;
+    alignItems?: Align;
     style?: object;
     displayName?: string;
     children?: ReactNode;
@@ -78,8 +80,8 @@ export const Box: React.FC<BoxProps> = ({
     const [requestLayout, setRequestLayout] = useState(() => changed);
 
     const [, setLayoutRequests] = useState<number>(0);
-    const [rootNode, setRootNode] = useState<YogaNode | null>(null);
-    const [node, setNode] = useState<YogaNode | null>(null);
+    const [rootNode, setRootNode] = useState<Node | null>(null);
+    const [node, setNode] = useState<Node | null>(null);
     const [addedToParent, setAddedToParent] = useState(false);
     const contextSize = useContext(AutoSizeContext);
     const measuredSize: Size = { width: 0, height: 0 };
@@ -98,7 +100,7 @@ export const Box: React.FC<BoxProps> = ({
             const cfg = yoga.Config.create();
             //Use sub-pixel sizing
             cfg.setPointScaleFactor(0);
-            const n: YogaNode | null = Node.createWithConfig(cfg);
+            const n: Node | null = yoga.Node.createWithConfig(cfg);
 
             if (parent && !addedToParent) {
                 const index = parent.getChildCount();

@@ -2,7 +2,8 @@
 
 import React, { ReactNode } from "react";
 import { useContext } from "react";
-import yoga from "yoga-layout-prebuilt";
+import yoga from "yoga-layout/sync";
+
 import { Box, BoxContext } from "./Box";
 
 interface BoxProps {
