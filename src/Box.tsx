@@ -10,8 +10,8 @@ import { } from "yoga-layout";
 const NO_CONTEXT = Symbol("NO_CONTEXT");
 
 interface BoxContextType {
-    root: Node | symbol | null;
-    parent: Node | null;
+    root: BoxProps | symbol | null;
+    parent: BoxProps | null;
     changed: () => void;
 }
 
@@ -49,8 +49,34 @@ interface BoxProps {
     alignItems?: Align;
     style?: object;
     displayName?: string;
-    children?: ReactNode;
+    children?: BoxProps[] | ReactNode;
+    parent?: BoxProps | null;
 }
+
+const EmptyBox: BoxProps = {
+    id: "",
+    width: 0,
+    height: 0,
+    flex: 0,
+    flexDirection: yoga.FLEX_DIRECTION_ROW,
+    marginTop: 0,
+    marginBottom: 0,
+    marginLeft: 0,
+    marginRight: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingLeft: 0,
+    paddingRight: 0,
+    minHeight: 0,
+    minWidth: 0,
+    border: 0,
+    justifyContent: yoga.JUSTIFY_FLEX_START,
+    alignItems: yoga.ALIGN_FLEX_START,
+    style: {},
+    displayName: "",
+    children: [],
+} as const;
+
 export const Box: React.FC<BoxProps> = ({
     id,
     width,
@@ -80,8 +106,8 @@ export const Box: React.FC<BoxProps> = ({
     const [requestLayout, setRequestLayout] = useState(() => changed);
 
     const [, setLayoutRequests] = useState<number>(0);
-    const [rootNode, setRootNode] = useState<Node | null>(null);
-    const [node, setNode] = useState<Node | null>(null);
+    const [rootNode, setRootNode] = useState<BoxProps | null>(null);
+    const [node, setNode] = useState<BoxProps | null>(null);
     const [addedToParent, setAddedToParent] = useState(false);
     const contextSize = useContext(AutoSizeContext);
     const measuredSize: Size = { width: 0, height: 0 };
@@ -97,14 +123,11 @@ export const Box: React.FC<BoxProps> = ({
 
         if (!node) {
             //Create our node
-            const cfg = yoga.Config.create();
-            //Use sub-pixel sizing
-            cfg.setPointScaleFactor(0);
-            const n: Node | null = yoga.Node.createWithConfig(cfg);
+            const n: BoxProps | null = { ...EmptyBox, parent };
 
             if (parent && !addedToParent) {
-                const index = parent.getChildCount();
-                parent.insertChild(n, index);
+                if (!parent.children) parent.children = [];
+                (parent.children as BoxProps[]).push(n);
                 setAddedToParent(true);
             }
             setNode(n);
@@ -112,6 +135,7 @@ export const Box: React.FC<BoxProps> = ({
                 setRootNode(n);
 
                 setRequestLayout(() => () => {
+                    // This just causes a re-render
                     setLayoutRequests((val) => val + 1);
                 });
             }
@@ -120,8 +144,8 @@ export const Box: React.FC<BoxProps> = ({
         if (node) {
 
             if (parent && !addedToParent) {
-                const index = parent.getChildCount();
-                parent.insertChild(node, index);
+                if (!parent.children) parent.children = [];
+                parent.children.push(n);
                 setAddedToParent(true);
             }
 
@@ -132,26 +156,27 @@ export const Box: React.FC<BoxProps> = ({
     if (node) {
 
         //Set our layout from props
-        if (w !== null && typeof w !== "undefined") node.setWidth(w);
-        if (h !== null && typeof h !== "undefined") node.setHeight(h);
-        node.setFlex(flex ?? 0);
+        if (w !== null && typeof w !== "undefined") node.width = w;
+        if (h !== null && typeof h !== "undefined") node.height = h;
+        node.flex = flex ?? 0;
+        node.flexDirection = flexDirection;
+        node.marginBottom = marginBottom;
+        node.marginTop = marginTop;
+        node.alignItems = alignItems;
+        node.marginLeft = marginLeft;
+        node.marginRight = marginRight;
+        node.paddingBottom = paddingBottom;
+        node.paddingTop = paddingTop;
+        node.paddingLeft = paddingLeft;
+        node.paddingRight = paddingRight;
+        node.minHeight = minHeight;
+        node.minWidth = minWidth;
+        node.border = border;
+        node.justifyContent = justifyContent;
+        node.alignItems = alignItems;
+        node.style = style;
 
-        node.setFlexDirection(flexDirection);
-        marginBottom && node.setMargin(yoga.EDGE_BOTTOM, marginBottom);
-        marginTop && node.setMargin(yoga.EDGE_TOP, marginTop);
-        marginLeft && node.setMargin(yoga.EDGE_LEFT, marginLeft);
-        marginRight && node.setMargin(yoga.EDGE_RIGHT, marginRight);
-        paddingBottom && node.setPadding(yoga.EDGE_BOTTOM, paddingBottom);
-        paddingTop && node.setPadding(yoga.EDGE_TOP, paddingTop);
-        paddingLeft && node.setPadding(yoga.EDGE_LEFT, paddingLeft);
-        paddingRight && node.setPadding(yoga.EDGE_RIGHT, paddingRight);
 
-        node.setMinHeight(minHeight);
-
-        node.setMinWidth(minWidth);
-        node.setBorder(yoga.EDGE_ALL, border);
-        node.setJustifyContent(justifyContent);
-        node.setAlignItems(alignItems);
         if (isRoot) {
             node.calculateLayout(
                 typeof w === "number" ? w : undefined,
@@ -162,7 +187,6 @@ export const Box: React.FC<BoxProps> = ({
         //Get our computed CSS layout
         const computedLayout = node.getComputedLayout();
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         layout = computedLayout || {
             width: 0,
             height: 0,
@@ -204,10 +228,11 @@ export const Box: React.FC<BoxProps> = ({
     useEffect(() => {
         return () => {
             if (node && parent) {
-                parent.removeChild(node);
-                if (isRoot) {
-                    node.freeRecursive();
+                const index = parent.children?.indexOf(node);
+                if (index !== undefined && index !== null) {
+                    parent.children?.splice(index, 1);
                 }
+
             }
         };
     }, []);
@@ -231,7 +256,7 @@ export const Box: React.FC<BoxProps> = ({
                         ...style,
                     }}
                 >
-                    {children}
+                    {children as ReactNode}
                 </div>
             </BoxContext.Provider>
         </AutoSizeContext.Provider>
