@@ -2,6 +2,7 @@ import React, { StrictMode } from "react";
 import { HBox, VBox } from "../Layout";
 import { render, screen, cleanup } from '@testing-library/react'
 import { describe, it, expect, afterEach } from "vitest";
+import { wait } from "./wait.js";
 
 interface BoxProps {
     width: number;
@@ -75,8 +76,10 @@ describe("App", () => {
         // this is necessary
         cleanup();
     });
-    it("basic flex layout with padding", () => {
+    it("basic flex layout with padding", async () => {
         render(<App width={110} height={50} />);
+        await wait(50);
+
         const root = screen.getByTestId("root")
         const child1 = screen.getByTestId("child1")
         const child2 = screen.getByTestId("child2")
@@ -99,8 +102,10 @@ describe("App", () => {
         expect(child3).toHaveStyle("height: 20px");
     });
 
-    it("HBox parent basic flex layout, centered and not centered with padding", () => {
+    it("HBox parent basic flex layout, centered and not centered with padding", async () => {
         const { rerender } = render(<App2 width={120} centered={true} height={70} />);
+        await wait(50);
+
         const root = screen.getByTestId("root")
         const child1 = screen.getByTestId("child1")
         const child2 = screen.getByTestId("child2")
@@ -124,6 +129,8 @@ describe("App", () => {
         expect(child3).toHaveStyle("height: 50px");
 
         rerender(<App2 width={120} centered={false} height={70} />);
+        await wait(50);
+
         expect(child1).toHaveStyle("left: 10px");
         expect(child1).toHaveStyle("width: 10px");
         expect(child1).toHaveStyle("height: 50px");

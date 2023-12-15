@@ -3,6 +3,7 @@ import { HBox, VBox } from "../Layout";
 import "regenerator-runtime";
 import { render, screen, cleanup } from '@testing-library/react'
 import { describe, it, expect, afterEach } from "vitest";
+import { wait } from "./wait.js";
 
 interface BoxProps {
     width: number;
@@ -58,8 +59,10 @@ describe("App", () => {
         // this is necessary
         cleanup();
     });
-    it("basic flex layout", () => {
+    it("basic flex layout", async () => {
         render(<App width={100} height={50} />);
+        await wait(50);
+
         const root = screen.getByTestId("root")
         const child1 = screen.getByTestId("child1")
         const child2 = screen.getByTestId("child2")
@@ -82,8 +85,9 @@ describe("App", () => {
         expect(child3).toHaveStyle("height: 20px");
     });
 
-    it("HBox parent basic flex layout, centered and not centered", () => {
+    it("HBox parent basic flex layout, centered and not centered", async () => {
         const { rerender } = render(<App2 width={100} centered={true} height={50} />);
+        await wait(50);
         const root = screen.getByTestId("root")
         const child1 = screen.getByTestId("child1")
         const child2 = screen.getByTestId("child2")
@@ -118,8 +122,10 @@ describe("App", () => {
         expect(child3).toHaveStyle("height: 50px");
     });
 
-    it("VBox parent basic flex layout, centered and not centered", () => {
+    it("VBox parent basic flex layout, centered and not centered", async () => {
         const { rerender } = render(<App3 width={50} centered={true} height={100} />);
+        await wait(50);
+
         const root = screen.getByTestId("root")
         const child1 = screen.getByTestId("child1")
         const child2 = screen.getByTestId("child2")

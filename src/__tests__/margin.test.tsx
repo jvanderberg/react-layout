@@ -1,7 +1,8 @@
+import { cleanup, render, screen } from '@testing-library/react';
 import React, { StrictMode } from "react";
+import { afterEach, describe, expect, it } from "vitest";
 import { HBox, VBox } from "../Layout";
-import { render, screen, cleanup } from '@testing-library/react'
-import { describe, it, expect, afterEach } from "vitest";
+import { wait } from "./wait";
 
 interface BoxProps {
     width: number;
@@ -35,14 +36,15 @@ const App2: React.FC<BoxProps> = ({ width, height }) => {
     );
 };
 
-
 describe("App", () => {
     afterEach(() => {
         // this is necessary
         cleanup();
     });
-    it("basic flex layout with marginLeft", () => {
+    it("basic flex layout with marginLeft", async () => {
         render(<App width={110} height={50} />);
+        await wait(50);
+
         const root = screen.getByTestId("root")
         const child1 = screen.getByTestId("child1")
         const child2 = screen.getByTestId("child2")

@@ -1,7 +1,8 @@
+import { cleanup, render, screen } from '@testing-library/react';
 import React, { StrictMode } from "react";
+import { afterEach, describe, expect, it } from "vitest";
 import { HBox, VBox } from "../Layout";
-import { render, screen, cleanup } from '@testing-library/react'
-import { describe, it, expect, afterEach } from "vitest";
+import { wait } from "./wait.js";
 
 interface BoxProps {
     width: number;
@@ -30,8 +31,10 @@ describe("App", () => {
         // this is necessary
         cleanup();
     });
-    it("basic proportional layout, centered with spacing", () => {
+    it("basic proportional layout, centered with spacing", async () => {
         const { rerender } = render(<App width={100} height={100} />);
+        await wait(50);
+
         const centered = screen.getByTestId("centered");
         const child1 = screen.getByTestId("child1");
         const child2 = screen.getByTestId("child2");

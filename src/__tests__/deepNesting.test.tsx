@@ -1,7 +1,8 @@
+import { cleanup, render, screen } from '@testing-library/react';
 import React, { ReactNode, StrictMode } from "react";
+import { afterEach, describe, expect, it } from "vitest";
 import { HBox, VBox } from "../Layout";
-import { render, screen, cleanup } from '@testing-library/react'
-import { describe, it, expect, afterEach } from "vitest";
+import { wait } from "./wait.js";
 
 interface UnitProps {
     level: number;
@@ -53,9 +54,10 @@ describe("App", () => {
         // this is necessary
         cleanup();
     });
-    it("deep nesting", () => {
+    it("deep nesting", async () => {
         const { rerender } = render(<App width={1000} height={1000} />);
-        // await wait(100);
+
+        await wait(100);
         const root = screen.getByTestId("l6root");
         const child4 = screen.getByTestId("l64");
         expect(root).toHaveStyle("width: 31.25px");

@@ -1,47 +1,29 @@
 // @ts-check
 
-import React, { ReactNode } from "react";
-import { useContext } from "react";
-import yoga from "yoga-layout/sync";
+import React, { Suspense, useContext } from "react";
+import { FlexDirection, loadYoga } from "yoga-layout";
 
-import { Box, BoxContext } from "./Box";
+import { Box, BoxContext, BoxProps, CSSDimension } from "./Box";
 
-interface BoxProps {
-    id?: string;
-    width?: number | string;
-    height?: number | string;
-    flex?: number;
-    margin?: number;
-    marginTop?: number;
-    marginBottom?: number;
-    marginLeft?: number;
-    marginRight?: number;
-    padding?: number;
-    paddingTop?: number;
-    paddingBottom?: number;
-    paddingLeft?: number;
-    paddingRight?: number;
-    minHeight?: number;
-    minWidth?: number;
-    border?: number;
-    style?: object;
-    centered?: boolean;
-    spacing?: number | string;
-    displayName?: string;
-    children?: ReactNode;
+export let YogaPromise: ReturnType<typeof loadYoga>;
+async function load() {
+    YogaPromise = loadYoga();
 }
+load();
+
+
 interface SpacerProps {
-    width?: number | string;
-    height?: number | string;
-    size?: number | string;
+    width?: CSSDimension;
+    height?: CSSDimension;
+    size?: CSSDimension;
     flex?: number;
     style?: object;
 }
 
-const boxFactory = (flexDirection: yoga.YogaFlexDirection) =>
+const boxFactory = (flexDirection: FlexDirection) =>
 // eslint-disable-next-line react/display-name
 {
-    const FactoryBox: React.FC<BoxProps> = ({
+    const FactoryBox: React.FC<BoxProps & { spacing?: CSSDimension }> = ({
         id,
         children,
         width,
@@ -60,75 +42,66 @@ const boxFactory = (flexDirection: yoga.YogaFlexDirection) =>
         paddingTop,
         centered,
         spacing,
-        displayName
+
     }) => {
         let alignItems;
-        let justifyContent;
         const { parent } = useContext(BoxContext);
         let w = width;
         let h = height;
         let f = flex;
-        if (parent?.getFlexDirection() === yoga.FLEX_DIRECTION_COLUMN) {
+        if (parent?.getFlexDirection() === FlexDirection.Column) {
             w = w ?? "100%";
             if (typeof h === "undefined" && !flex) {
                 f = 1;
             }
         }
-        if (parent?.getFlexDirection() === yoga.FLEX_DIRECTION_ROW) {
+        if (parent?.getFlexDirection() === FlexDirection.Row) {
             h = h ?? "100%";
             if (typeof w === "undefined" && !flex) {
                 f = 1;
             }
         }
-        if (centered) {
-            justifyContent = yoga.JUSTIFY_CENTER;
-        }
 
-        const pl = paddingLeft ?? padding;
-        const pr = paddingRight ?? padding;
-        const pt = paddingTop ?? padding;
-        const pb = paddingBottom ?? padding;
-        const ml = marginLeft ?? margin;
-        const mr = marginRight ?? margin;
-        const mt = marginTop ?? margin;
-        const mb = marginBottom ?? margin;
 
         return (
-            <Box
-                id={id}
-                flexDirection={flexDirection}
-                flex={f}
-                width={w}
-                height={h}
-                style={style}
-                marginLeft={ml}
-                marginRight={mr}
-                marginBottom={mb}
-                marginTop={mt}
-                paddingLeft={pl}
-                paddingRight={pr}
-                paddingBottom={pb}
-                paddingTop={pt}
-                alignItems={alignItems}
-                justifyContent={justifyContent}
-                displayName={displayName}
-            >
-                {spacing &&
-                    React.Children.map(children, (child, i) => (
-                        <>
-                            {i > 0 && <Spacer width={spacing}></Spacer>}
-                            {child}
-                        </>
-                    ))}
-                {typeof spacing === "undefined" && children}
-            </Box>
+            <Suspense fallback={<div></div>}>
+                <Box
+                    id={id}
+                    flexDirection={flexDirection}
+                    flex={f}
+                    width={w}
+                    height={h}
+                    style={style}
+                    marginLeft={marginLeft}
+                    marginRight={marginRight}
+                    marginBottom={marginBottom}
+                    marginTop={marginTop}
+                    margin={margin}
+                    paddingLeft={paddingLeft}
+                    paddingRight={paddingRight}
+                    paddingBottom={paddingBottom}
+                    paddingTop={paddingTop}
+                    padding={padding}
+                    alignItems={alignItems}
+                    centered={centered}
+                >
+                    {spacing &&
+                        React.Children.map(children, (child, i) => (
+                            <>
+                                {i > 0 && <Spacer width={spacing}></Spacer>}
+                                {child}
+                            </>
+                        ))}
+                    {typeof spacing === "undefined" && children}
+                </Box>
+            </Suspense>
         );
     };
     return FactoryBox;
 };
 
-export const VBox = boxFactory(yoga.FLEX_DIRECTION_COLUMN);
-export const HBox = boxFactory(yoga.FLEX_DIRECTION_ROW);
+export const VBox = boxFactory(FlexDirection.Column);
+export const HBox = boxFactory(FlexDirection.Row);
 
 export const Spacer: React.FC<SpacerProps> = ({
     size,
@@ -141,14 +114,14 @@ export const Spacer: React.FC<SpacerProps> = ({
     let w = width;
     let h = height;
     let f = flex;
-    if (parent?.getFlexDirection() === yoga.FLEX_DIRECTION_COLUMN) {
+    if (parent?.getFlexDirection() === FlexDirection.Column) {
         w = width ?? size ?? "100%";
         if (size) h = size;
         if (typeof h === "undefined" && !flex) {
             f = 1;
         }
     }
-    if (parent?.getFlexDirection() === yoga.FLEX_DIRECTION_ROW) {
+    if (parent?.getFlexDirection() === FlexDirection.Row) {
         h = "100%";
         if (size) w = size;
         if (typeof w === "undefined" && !flex) {

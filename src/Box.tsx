@@ -2,9 +2,11 @@
 
 import React, { ReactNode, useEffect, useState } from "react";
 import { createContext, useContext } from "react";
-import yoga, { Node, FlexDirection, Justify, Align } from "yoga-layout/sync";
+import { Node, FlexDirection, Justify, Align, Edge, Direction } from "yoga-layout";
 import { AutoSizeContext, DefaultAutoSizeContext } from "./AutoSize";
-import { } from "yoga-layout";
+import { YogaPromise } from "./Layout.js";
+import { suspend } from "suspend-react";
+
 
 
 const NO_CONTEXT = Symbol("NO_CONTEXT");
@@ -27,28 +29,29 @@ interface Size {
     width: number | undefined;
     height: number | undefined;
 }
-
-interface BoxProps {
+export type CSSDimension = number | `${number}%`
+export interface BoxProps {
     id?: string;
-    width?: number | "auto" | `${number}%`;
-    height?: number | "auto" | `${number}%`;
+    width?: CSSDimension;
+    height?: CSSDimension;
     flex?: number;
     flexDirection?: FlexDirection;
-    marginTop?: number;
-    marginBottom?: number;
-    marginLeft?: number;
-    marginRight?: number;
-    paddingTop?: number;
-    paddingBottom?: number;
-    paddingLeft?: number;
-    paddingRight?: number;
-    minHeight?: number;
-    minWidth?: number;
+    margin?: CSSDimension;
+    marginTop?: CSSDimension;
+    marginBottom?: CSSDimension;
+    marginLeft?: CSSDimension;
+    marginRight?: CSSDimension;
+    padding?: CSSDimension;
+    paddingTop?: CSSDimension;
+    paddingBottom?: CSSDimension;
+    paddingLeft?: CSSDimension;
+    paddingRight?: CSSDimension;
+    minHeight?: CSSDimension;
+    minWidth?: CSSDimension;
     border?: number;
-    justifyContent?: Justify;
+    centered?: boolean;
     alignItems?: Align;
     style?: object;
-    displayName?: string;
     children?: ReactNode;
 }
 export const Box: React.FC<BoxProps> = ({
@@ -57,11 +60,13 @@ export const Box: React.FC<BoxProps> = ({
     height,
     children,
     flex,
-    flexDirection = yoga.FLEX_DIRECTION_ROW,
+    flexDirection = FlexDirection.Row,
+    margin,
     marginTop,
     marginBottom,
     marginLeft,
     marginRight,
+    padding,
     paddingTop,
     paddingBottom,
     paddingLeft,
@@ -69,11 +74,13 @@ export const Box: React.FC<BoxProps> = ({
     minHeight = 0,
     minWidth = 0,
     border = 0,
-    justifyContent = yoga.JUSTIFY_FLEX_START,
-    alignItems = yoga.ALIGN_FLEX_START,
+    centered = true,
+    alignItems = Align.FlexStart,
     style,
-    displayName
 }) => {
+    // Wait for the Yoga library to load, as it uses async WASM
+    // In future react will support use(YogaPromise) directly.
+    const Yoga = suspend(YogaPromise) as Awaited<typeof YogaPromise>;
     const { root, parent, changed } = useContext<BoxContextType>(BoxContext);
     const isRoot = root === NO_CONTEXT;
 
@@ -97,10 +104,10 @@ export const Box: React.FC<BoxProps> = ({
 
         if (!node) {
             //Create our node
-            const cfg = yoga.Config.create();
+            const cfg = Yoga.Config.create();
             //Use sub-pixel sizing
             cfg.setPointScaleFactor(0);
-            const n: Node | null = yoga.Node.createWithConfig(cfg);
+            const n: Node | null = Yoga.Node.createWithConfig(cfg);
 
             if (parent && !addedToParent) {
                 const index = parent.getChildCount();
@@ -128,6 +135,7 @@ export const Box: React.FC<BoxProps> = ({
         }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let layout: any = {};
     if (node) {
 
@@ -135,28 +143,40 @@ export const Box: React.FC<BoxProps> = ({
         if (w !== null && typeof w !== "undefined") node.setWidth(w);
         if (h !== null && typeof h !== "undefined") node.setHeight(h);
         node.setFlex(flex ?? 0);
+        let justifyContent = Justify.FlexStart;
+        if (centered) {
+            justifyContent = Justify.Center;
+        }
 
+        const pl = paddingLeft ?? padding;
+        const pr = paddingRight ?? padding;
+        const pt = paddingTop ?? padding;
+        const pb = paddingBottom ?? padding;
+        const ml = marginLeft ?? margin;
+        const mr = marginRight ?? margin;
+        const mt = marginTop ?? margin;
+        const mb = marginBottom ?? margin;
         node.setFlexDirection(flexDirection);
-        marginBottom && node.setMargin(yoga.EDGE_BOTTOM, marginBottom);
-        marginTop && node.setMargin(yoga.EDGE_TOP, marginTop);
-        marginLeft && node.setMargin(yoga.EDGE_LEFT, marginLeft);
-        marginRight && node.setMargin(yoga.EDGE_RIGHT, marginRight);
-        paddingBottom && node.setPadding(yoga.EDGE_BOTTOM, paddingBottom);
-        paddingTop && node.setPadding(yoga.EDGE_TOP, paddingTop);
-        paddingLeft && node.setPadding(yoga.EDGE_LEFT, paddingLeft);
-        paddingRight && node.setPadding(yoga.EDGE_RIGHT, paddingRight);
+        mb && node.setMargin(Edge.Bottom, mb);
+        mt && node.setMargin(Edge.Top, mt);
+        ml && node.setMargin(Edge.Left, ml);
+        mr && node.setMargin(Edge.Right, mr);
+        pb && node.setPadding(Edge.Bottom, pb);
+        pt && node.setPadding(Edge.Top, pt);
+        pl && node.setPadding(Edge.Left, pl);
+        pr && node.setPadding(Edge.Right, pr);
 
         node.setMinHeight(minHeight);
 
         node.setMinWidth(minWidth);
-        node.setBorder(yoga.EDGE_ALL, border);
+        node.setBorder(Edge.All, border);
         node.setJustifyContent(justifyContent);
         node.setAlignItems(alignItems);
         if (isRoot) {
             node.calculateLayout(
                 typeof w === "number" ? w : undefined,
                 typeof h === "number" ? h : undefined,
-                yoga.DIRECTION_LTR
+                Direction.LTR
             );
         }
         //Get our computed CSS layout
@@ -188,14 +208,20 @@ export const Box: React.FC<BoxProps> = ({
         height,
         flex,
         flexDirection,
+        margin,
         marginTop,
         marginBottom,
         marginLeft,
         marginRight,
+        padding,
+        paddingTop,
+        paddingBottom,
+        paddingRight,
+        paddingLeft,
         minHeight,
         minWidth,
         border,
-        justifyContent,
+        centered,
         alignItems,
         node,
         w,

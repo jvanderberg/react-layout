@@ -3,6 +3,7 @@ import { HBox, VBox } from "../Layout";
 import { act } from "@testing-library/react";
 import { render, screen, cleanup } from '@testing-library/react'
 import { describe, it, expect, afterEach } from "vitest";
+import { wait } from "./wait.js";
 
 interface Setter {
     [key: string]: {
@@ -60,6 +61,8 @@ describe("App", () => {
         render(
             <App id="base" width={100} height={50} setter={setter} />
         );
+        await wait(50);
+
         const root = screen.getByTestId("root")
         const child1 = screen.getByTestId("child1")
         const child2 = screen.getByTestId("child2")
