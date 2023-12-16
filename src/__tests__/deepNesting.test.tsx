@@ -1,5 +1,5 @@
 import { cleanup, render, screen } from '@testing-library/react';
-import React, { ReactNode, StrictMode } from "react";
+import React, { ReactNode } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 import { HBox, VBox } from "../Layout";
 import { wait } from "./wait.js";
@@ -28,23 +28,21 @@ interface BoxProps {
 }
 const App: React.FC<BoxProps> = ({ width, height }) => {
     return (
-        <StrictMode>
-            <div className="App">
-                <VBox width={width} height={height}>
-                    <Unit level={1}>
-                        <Unit level={2}>
-                            <Unit level={3}>
-                                <Unit level={4}>
-                                    <Unit level={5}>
-                                        <Unit level={6}></Unit>
-                                    </Unit>
+        <div className="App">
+            <VBox width={width} height={height}>
+                <Unit level={1}>
+                    <Unit level={2}>
+                        <Unit level={3}>
+                            <Unit level={4}>
+                                <Unit level={5}>
+                                    <Unit level={6}></Unit>
                                 </Unit>
                             </Unit>
                         </Unit>
                     </Unit>
-                </VBox>
-            </div>
-        </StrictMode>
+                </Unit>
+            </VBox>
+        </div>
     );
 };
 

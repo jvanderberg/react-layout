@@ -1,4 +1,4 @@
-import React, { StrictMode } from "react";
+import React from "react";
 import { HBox, VBox } from "../Layout";
 import { render, screen, cleanup } from '@testing-library/react'
 import { describe, it, expect, afterEach } from "vitest";
@@ -12,61 +12,55 @@ interface BoxProps {
 
 const App: React.FC<BoxProps> = ({ width, height }) => {
     return (
-        <StrictMode>
-            <div className="App">
-                <HBox
-                    id="root"
-                    paddingLeft={10}
-                    paddingTop={2}
-                    width={width}
-                    height={height}
-                >
-                    <VBox id="child1" flex={1}></VBox>
-                    <VBox id="child2" flex={2}></VBox>
-                    <VBox id="child3" flex={7} height={20}></VBox>
-                </HBox>
-            </div>
-        </StrictMode>
+        <div className="App">
+            <HBox
+                id="root"
+                paddingLeft={10}
+                paddingTop={2}
+                width={width}
+                height={height}
+            >
+                <VBox id="child1" width="10%"></VBox>
+                <VBox id="child2" width="20%"></VBox>
+                <VBox id="child3" width="70%" height={20}></VBox>
+            </HBox>
+        </div>
     );
 };
 
 const App2: React.FC<BoxProps> = ({ width, height, centered }) => {
     return (
-        <StrictMode>
-            <div className="App">
-                <HBox
-                    id="root"
-                    padding={10}
-                    centered={centered}
-                    width={width}
-                    height={height}
-                >
-                    <VBox id="child1" width={10}></VBox>
-                    <VBox id="child2" width={10}></VBox>
-                    <VBox id="child3" width={20}></VBox>
-                </HBox>
-            </div>
-        </StrictMode>
+        <div className="App">
+            <HBox
+                id="root"
+                padding={10}
+                centered={centered}
+                width={width}
+                height={height}
+            >
+                <VBox id="child1" width={10}></VBox>
+                <VBox id="child2" width={10}></VBox>
+                <VBox id="child3" width={20}></VBox>
+            </HBox>
+        </div>
     );
 };
 
 const App3: React.FC<BoxProps> = ({ width, height, centered }) => {
     return (
-        <StrictMode>
-            <div className="App">
-                <VBox
-                    id="root"
-                    padding={10}
-                    centered={centered}
-                    width={width}
-                    height={height}
-                >
-                    <VBox id="child1" height={10}></VBox>
-                    <VBox id="child2" height={10}></VBox>
-                    <VBox id="child3" height={20}></VBox>
-                </VBox>
-            </div>
-        </StrictMode>
+        <div className="App">
+            <VBox
+                id="root"
+                padding={10}
+                centered={centered}
+                width={width}
+                height={height}
+            >
+                <VBox id="child1" height={10}></VBox>
+                <VBox id="child2" height={10}></VBox>
+                <VBox id="child3" height={20}></VBox>
+            </VBox>
+        </div>
     );
 };
 

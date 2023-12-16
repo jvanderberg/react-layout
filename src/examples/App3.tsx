@@ -8,11 +8,14 @@ function App3() {
 
         <div className="App">
             <AutoSize viewPort={true}>
-                <VBox centered={true}>
-                    <HBox centered={true} spacing="10%" height="50%">
-                        <VBox width="20%" style={boxShadow}></VBox>
-                        <VBox width="20%" style={boxShadow}></VBox>
-                        <VBox width="20%" style={boxShadow}></VBox>
+                <VBox >
+                    <HBox style={boxShadow} centered={true} >
+                        <VBox style={boxShadow} centered={true} spacing={20} width="50%">
+                            <VBox height="20%" style={boxShadow}></VBox>
+                            <VBox height="20%" style={boxShadow}></VBox>
+                            <VBox height="20%" style={boxShadow}></VBox>
+                        </VBox>
+
                     </HBox>
                 </VBox>
             </AutoSize>

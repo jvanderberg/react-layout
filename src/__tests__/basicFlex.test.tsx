@@ -16,9 +16,9 @@ const App: React.FC<BoxProps> = ({ width, height }) => {
         <StrictMode>
             <div className="App1">
                 <HBox id="root" width={width} height={height}>
-                    <VBox id="child1" flex={1}></VBox>
-                    <VBox id="child2" flex={2}></VBox>
-                    <VBox id="child3" flex={7} height={20}></VBox>
+                    <VBox id="child1" width="10%"></VBox>
+                    <VBox id="child2" width="20%"></VBox>
+                    <VBox id="child3" width="70%" height={20}></VBox>
                 </HBox>
             </div>
         </StrictMode>

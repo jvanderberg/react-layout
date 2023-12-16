@@ -1,2 +1,2 @@
-export { HBox, VBox, Spacer } from "./Layout";
-export { AutoSize } from "./AutoSize";
+export { HBox, VBox } from './Layout';
+export { AutoSize } from './AutoSize';

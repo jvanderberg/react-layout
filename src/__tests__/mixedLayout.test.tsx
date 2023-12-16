@@ -1,52 +1,48 @@
-import React, { Dispatch, StrictMode, useState } from "react";
+import React, { Dispatch, useState } from "react";
 import { HBox, VBox } from "../Layout";
 import { act } from "@testing-library/react";
 import { render, screen, cleanup } from '@testing-library/react'
 import { describe, it, expect, afterEach } from "vitest";
 import { wait } from "./wait.js";
+import { CSSDimension } from "../Box.js";
 
 interface Setter {
     [key: string]: {
-        setWidth: Dispatch<React.SetStateAction<number | undefined>>;
-        setHeight: Dispatch<React.SetStateAction<number | undefined>>;
-        setFlex: Dispatch<React.SetStateAction<number | undefined>>;
+        setWidth: Dispatch<React.SetStateAction<CSSDimension | undefined>>;
+        setHeight: Dispatch<React.SetStateAction<CSSDimension | undefined>>;
     };
 }
 interface DBoxProps {
     setter: Setter;
     id: string;
-    width?: number;
-    height?: number;
-    flex?: number;
+    width?: CSSDimension;
+    height?: CSSDimension;
 }
 const DynamicVBox: React.FC<DBoxProps> = ({
     setter,
     id,
     width,
     height,
-    flex,
     ...props
 }) => {
     const [lwidth, setWidth] = useState(width);
     const [lheight, setHeight] = useState(height);
-    const [lflex, setFlex] = useState(flex);
-    setter[id] = { setWidth, setHeight, setFlex };
+
+    setter[id] = { setWidth, setHeight };
     return (
-        <VBox id={id} width={lwidth} height={lheight} flex={lflex} {...props} />
+        <VBox id={id} width={lwidth} height={lheight}  {...props} />
     );
 };
 
 const App: React.FC<DBoxProps> = ({ width, height, setter }) => {
     return (
-        <StrictMode>
-            <div className="App">
-                <HBox id="root" width={width} height={height}>
-                    <DynamicVBox setter={setter} id="child1" flex={2}></DynamicVBox>
-                    <DynamicVBox setter={setter} id="child2" flex={2}></DynamicVBox>
-                    <DynamicVBox setter={setter} id="child3" width={20}></DynamicVBox>
-                </HBox>
-            </div>
-        </StrictMode>
+        <div className="App">
+            <HBox id="root" width={width} height={height}>
+                <DynamicVBox setter={setter} id="child1"></DynamicVBox>
+                <DynamicVBox setter={setter} id="child2"></DynamicVBox>
+                <DynamicVBox setter={setter} id="child3" width={20}></DynamicVBox>
+            </HBox>
+        </div>
     );
 };
 
@@ -84,7 +80,7 @@ describe("App", () => {
         expect(child3).toHaveStyle("width: 20px");
         expect(child3).toHaveStyle("height: 50px");
 
-        act(() => setter.child3.setFlex(4));
+        act(() => setter.child3.setWidth("50%"));
         expect(child1).toHaveStyle("left: 0px");
         expect(child1).toHaveStyle("width: 25px");
         expect(child1).toHaveStyle("height: 50px");
@@ -97,9 +93,8 @@ describe("App", () => {
         expect(child3).toHaveStyle("height: 50px");
 
         await act(async () => {
-            setter.child1.setFlex(undefined);
             setter.child1.setWidth(50);
-            setter.child3.setFlex(2);
+            setter.child3.setWidth("25%");
         });
         expect(child1).toHaveStyle("left: 0px");
         expect(child1).toHaveStyle("width: 50px");

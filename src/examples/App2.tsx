@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { HBox, Spacer, VBox } from "../Layout";
+import { HBox, VBox } from "../Layout";
 import { easeInQuad, usePropertyAnimator } from "./usePropertyAnimator";
 const boxShadow = { boxShadow: "0px 0px 0.5px 0.5px blue" };
 
@@ -14,9 +14,9 @@ function App2() {
     return (
         <div className="App">
             <HBox height={700} width={1000} style={boxShadow}>
-                <Spacer size={20} />
+
                 <LeftPanel opened={opened} />
-                <VBox flex={1} style={{ backgroundColor: "#FF0000" }}></VBox>
+                <VBox style={{ backgroundColor: "#FF0000" }}></VBox>
             </HBox>
             <button value="Toggle" onClick={() => setOpened(!opened)}>
                 Toggle

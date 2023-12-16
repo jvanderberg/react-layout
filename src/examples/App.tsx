@@ -18,11 +18,11 @@ const Contents = ({ children, color }: ContentsType) => {
                 <VBox style={boxShadow}></VBox>
             </VBox>
             <VBox width={"60%"} style={boxShadow}>
-                <VBox flex={1} style={boxShadow}></VBox>
-                <VBox flex={3} style={boxShadow}>
+                <VBox height="20%" style={boxShadow}></VBox>
+                <VBox height="60%" style={boxShadow}>
                     {children}
                 </VBox>
-                <VBox flex={1} style={boxShadow}></VBox>
+                <VBox height="20%" style={boxShadow}></VBox>
             </VBox>
             <VBox width={"20%"} style={boxShadow}>
                 <VBox style={boxShadow}></VBox>

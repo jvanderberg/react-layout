@@ -1,9 +1,9 @@
 // @ts-check
 
-import React, { Suspense, useContext } from "react";
+import React, { MouseEventHandler, ReactNode, Suspense, useContext } from "react";
 import { FlexDirection, loadYoga } from "yoga-layout";
 
-import { Box, BoxContext, BoxProps, CSSDimension } from "./Box";
+import { Box, BoxContext, CSSDimension } from "./Box";
 
 export let YogaPromise: ReturnType<typeof loadYoga>;
 async function load() {
@@ -12,23 +12,39 @@ async function load() {
 load();
 
 
-interface SpacerProps {
+export interface LayoutProps {
+    id?: string;
     width?: CSSDimension;
     height?: CSSDimension;
-    size?: CSSDimension;
-    flex?: number;
+    margin?: CSSDimension;
+    marginTop?: CSSDimension;
+    marginBottom?: CSSDimension;
+    marginLeft?: CSSDimension;
+    marginRight?: CSSDimension;
+    padding?: CSSDimension;
+    paddingTop?: CSSDimension;
+    paddingBottom?: CSSDimension;
+    paddingLeft?: CSSDimension;
+    paddingRight?: CSSDimension;
+    minHeight?: CSSDimension;
+    minWidth?: CSSDimension;
+    border?: number;
+    centered?: boolean;
     style?: object;
+    children?: ReactNode;
+    spacing?: number;
+    onClick?: MouseEventHandler;
 }
+
 
 const boxFactory = (flexDirection: FlexDirection) =>
 // eslint-disable-next-line react/display-name
 {
-    const FactoryBox: React.FC<BoxProps & { spacing?: CSSDimension }> = ({
+    const FactoryBox: React.FC<LayoutProps> = ({
         id,
         children,
         width,
         height,
-        flex,
         style,
         margin,
         marginLeft,
@@ -42,22 +58,23 @@ const boxFactory = (flexDirection: FlexDirection) =>
         paddingTop,
         centered,
         spacing,
+        onClick
 
     }) => {
-        let alignItems;
         const { parent } = useContext(BoxContext);
         let w = width;
         let h = height;
-        let f = flex;
+        let f;
         if (parent?.getFlexDirection() === FlexDirection.Column) {
             w = w ?? "100%";
-            if (typeof h === "undefined" && !flex) {
+            if (typeof h === "undefined") {
                 f = 1;
             }
         }
         if (parent?.getFlexDirection() === FlexDirection.Row) {
+
             h = h ?? "100%";
-            if (typeof w === "undefined" && !flex) {
+            if (typeof w === "undefined") {
                 f = 1;
             }
         }
@@ -82,17 +99,12 @@ const boxFactory = (flexDirection: FlexDirection) =>
                     paddingBottom={paddingBottom}
                     paddingTop={paddingTop}
                     padding={padding}
-                    alignItems={alignItems}
                     centered={centered}
+                    spacing={spacing}
+                    onClick={onClick}
                 >
-                    {spacing &&
-                        React.Children.map(children, (child, i) => (
-                            <>
-                                {i > 0 && <Spacer width={spacing}></Spacer>}
-                                {child}
-                            </>
-                        ))}
-                    {typeof spacing === "undefined" && children}
+
+                    {children}
                 </Box>
             </Suspense>
         );
@@ -103,30 +115,3 @@ const boxFactory = (flexDirection: FlexDirection) =>
 export const VBox = boxFactory(FlexDirection.Column);
 export const HBox = boxFactory(FlexDirection.Row);
 
-export const Spacer: React.FC<SpacerProps> = ({
-    size,
-    flex,
-    width,
-    height,
-    style,
-}) => {
-    const { parent } = useContext(BoxContext);
-    let w = width;
-    let h = height;
-    let f = flex;
-    if (parent?.getFlexDirection() === FlexDirection.Column) {
-        w = width ?? size ?? "100%";
-        if (size) h = size;
-        if (typeof h === "undefined" && !flex) {
-            f = 1;
-        }
-    }
-    if (parent?.getFlexDirection() === FlexDirection.Row) {
-        h = "100%";
-        if (size) w = size;
-        if (typeof w === "undefined" && !flex) {
-            f = 1;
-        }
-    }
-    return <Box flex={f} width={w} height={h} style={style} />;
-};

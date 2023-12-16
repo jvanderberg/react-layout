@@ -2,7 +2,7 @@
 
 import React, { ReactNode, useEffect, useState } from "react";
 import { createContext, useContext } from "react";
-import { Node, FlexDirection, Justify, Align, Edge, Direction } from "yoga-layout";
+import { Node, FlexDirection, Justify, Align, Edge, Direction, Gutter } from "yoga-layout";
 import { AutoSizeContext, DefaultAutoSizeContext } from "./AutoSize";
 import { YogaPromise } from "./Layout.js";
 import { suspend } from "suspend-react";
@@ -53,6 +53,8 @@ export interface BoxProps {
     alignItems?: Align;
     style?: object;
     children?: ReactNode;
+    spacing?: number;
+    onClick?: React.MouseEventHandler;
 }
 export const Box: React.FC<BoxProps> = ({
     id,
@@ -75,16 +77,17 @@ export const Box: React.FC<BoxProps> = ({
     minWidth = 0,
     border = 0,
     centered = true,
-    alignItems = Align.FlexStart,
+    spacing,
     style,
+    onClick
 }) => {
     // Wait for the Yoga library to load, as it uses async WASM
     // In future react will support use(YogaPromise) directly.
     const Yoga = suspend(YogaPromise) as Awaited<typeof YogaPromise>;
     const { root, parent, changed } = useContext<BoxContextType>(BoxContext);
     const isRoot = root === NO_CONTEXT;
+    const [requestLayout, setRequestLayout] = useState(() => changed)
 
-    const [requestLayout, setRequestLayout] = useState(() => changed);
 
     const [, setLayoutRequests] = useState<number>(0);
     const [rootNode, setRootNode] = useState<Node | null>(null);
@@ -119,7 +122,7 @@ export const Box: React.FC<BoxProps> = ({
                 setRootNode(n);
 
                 setRequestLayout(() => () => {
-                    setLayoutRequests((val) => val + 1);
+                    setLayoutRequests(val => val + 1);
                 });
             }
         }
@@ -165,13 +168,13 @@ export const Box: React.FC<BoxProps> = ({
         pt && node.setPadding(Edge.Top, pt);
         pl && node.setPadding(Edge.Left, pl);
         pr && node.setPadding(Edge.Right, pr);
-
+        spacing && node.setGap(flexDirection == FlexDirection.Column ? Gutter.Row : Gutter.Column, spacing ?? 0);
         node.setMinHeight(minHeight);
 
         node.setMinWidth(minWidth);
         node.setBorder(Edge.All, border);
         node.setJustifyContent(justifyContent);
-        node.setAlignItems(alignItems);
+
         if (isRoot) {
             node.calculateLayout(
                 typeof w === "number" ? w : undefined,
@@ -222,10 +225,10 @@ export const Box: React.FC<BoxProps> = ({
         minWidth,
         border,
         centered,
-        alignItems,
         node,
         w,
-        h
+        h,
+        changed
     ]);
     useEffect(() => {
         return () => {
@@ -237,6 +240,12 @@ export const Box: React.FC<BoxProps> = ({
             }
         };
     }, []);
+    useEffect(() => {
+        if (!isRoot && changed) {
+            setRequestLayout(() => changed);
+        }
+
+    }, [changed]);
     return (
         //We always create a new empty auto size context, to kill the scope if there is a wrapping context
         <AutoSizeContext.Provider value={DefaultAutoSizeContext}>
@@ -244,12 +253,13 @@ export const Box: React.FC<BoxProps> = ({
                 value={{
                     parent: node,
                     root: rootNode,
-                    changed: requestLayout,
+                    changed: requestLayout
                 }}
             >
                 <div
                     id={id}
                     data-testid={id}
+                    onClick={onClick}
                     style={{
                         boxSizing: "border-box",
                         position: isRoot ? "relative" : "absolute",
